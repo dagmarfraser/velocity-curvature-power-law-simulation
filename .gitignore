@@ -1,0 +1,24 @@
+# MATLAB generated files
+*.asv
+*.m~
+slprj/
+
+# Large data files (uncomment if needed)
+# *.mat
+# *.fig
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+initialize_git_repository.m
+initialize_git_repository.m
+initialize_git_repository.m
