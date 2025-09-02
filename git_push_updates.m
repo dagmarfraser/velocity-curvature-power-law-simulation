@@ -4,7 +4,7 @@ function git_push_updates(commit_message)
 % Usage: git_push_updates('Your commit message here')
 %        git_push_updates()  % Will prompt for message
 %
-% Author: Research workflow script
+% Author: d.s.fraser@bham.ac.uk
 
 if nargin < 1
     commit_message = input('Commit message: ', 's');
