@@ -25,11 +25,8 @@ function noise = generateCustomNoise_v003(N, alpha, amplitude, fs)
 %   - generateCustomNoise_v003: Clean interface wrapper for compatibility
 %   - All validation and amplitude normalization handled by XuNoise
 %
-% See also: XuNoise, SpectralVsDFAComparison_v004_XuMethods
-%
-% Author: PowerLaw Toolchain Development Team
+% Author: d.s.fraser@bham.ac.uk
 % Based on: XuNoise wrapper architecture
-% Version: 3.1 - Clean wrapper implementation
 % Date: July 2025
 
 % Input validation
