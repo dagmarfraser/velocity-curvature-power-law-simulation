@@ -12,9 +12,13 @@ This repository contains multiple documentation files serving different purposes
 
 ### Primary Documentation
 - **README.md** (this file): Central documentation hub providing comprehensive project overview, installation instructions, and current methodologies
-- **revised\_prereg\_v071.md**: **CURRENT** - Data-Driven Model Adequacy Framework pre-registration with complete 4-stage progressive analysis methodology
+- **revised\_prereg\_v071.md**: **CURRENT** - Pre-registration with complete 4-stage progressive analysis methodology
 
----
+Project Hosted https://osf.io/dwxa2/?view_only=193d498afc6441e990a7ebec77e16f1f
+and on https://github.com/dagmarfraser/velocity-curvature-power-law-simulation
+and eventually UBIRA eData (Large Datasets)
+
+Multiverse Database: [DOI when available] - 5.2GB SQLite database with complete parameter space results - Generated using Toolchaincallerv057.m - 14M+ configurations across biological parameter ranges---
 
 ## Core Workflow Architecture
 
