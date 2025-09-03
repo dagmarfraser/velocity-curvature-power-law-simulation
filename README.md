@@ -16,9 +16,7 @@ This repository contains multiple documentation files serving different purposes
 
 Project Hosted https://osf.io/dwxa2/?view_only=193d498afc6441e990a7ebec77e16f1f
 and on https://github.com/dagmarfraser/velocity-curvature-power-law-simulation
-and eventually UBIRA eData (Large Datasets)
-
-Multiverse Database: [DOI when available] - 5.2GB SQLite database with complete parameter space results - Generated using Toolchaincallerv057.m - 14M+ configurations across biological parameter ranges---
+and eventually UBIRA eData (Large Datasets) Simulation Database: [DOI when available] - 5GB+ SQLite database with complete parameter space results - Generated using Toolchaincallerv057.m - 14M+ configurations across biological parameter ranges.
 
 ## Core Workflow Architecture
 
