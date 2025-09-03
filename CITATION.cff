@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Fraser"
+  given-names: "Dagmar Scott" 
+  orcid: "https://orcid.org/0000-0002-9241-7772"
+- family-names: "Di Luca"
+  given-names: "Massimiliano" 
+  orcid: "https://orcid.org/0000-0003-3085-7251"
+- family-names: "Cook"
+  given-names: "Jennifer Louise" 
+  orcid: "https://orcid.org/0000-0003-4916-8667"
+title: "Velocity-Curvature Power Law Protocol Simulation"
+version: 0.9
+identifiers:
+doi: 10.5281/zenodo.17047450
+date-released: 2025-09-13
+url: "https://github.com/dagmarfraser/velocity-curvature-power-law-simulation"
