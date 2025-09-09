@@ -12,7 +12,7 @@ This repository contains multiple documentation files serving different purposes
 
 ### Primary Documentation
 - **README.md** (this file): Central documentation hub providing comprehensive project overview, installation instructions, and current methodologies
-- **revised\_prereg\_v071.md**: **CURRENT** - Pre-registration with complete 4-stage progressive analysis methodology
+- **revised\_prereg\_v072.md**: **CURRENT** - Pre-registration with complete 4-stage progressive analysis methodology
 
 Project Hosted https://osf.io/dwxa2/?view_only=193d498afc6441e990a7ebec77e16f1f
 and on https://github.com/dagmarfraser/velocity-curvature-power-law-simulation
@@ -154,7 +154,7 @@ Protocol selection flowchart based on experimental conditions will enable eviden
 
 ## Model Adequacy Assessment Results Guide
 
-### Primary Adequacy Criteria (prereg_v071)
+### Primary Adequacy Criteria (prereg_v072)
 **Residual Pattern Threshold**: Cohen's d > 0.5 indicates systematic bias requiring conditional analysis
 **Coefficient Instability**: Bootstrap CI > ±0.03 (clinical significance from Cook et al. 2023)
 **Cross-Validation Degradation**: >15% performance loss indicates poor regional fit
