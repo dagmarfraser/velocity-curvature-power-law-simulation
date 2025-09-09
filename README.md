@@ -14,7 +14,7 @@ This repository contains multiple documentation files serving different purposes
 - **README.md** (this file): Central documentation hub providing comprehensive project overview, installation instructions, and current methodologies
 - **revised\_prereg\_v072.md**: **CURRENT** - Pre-registration with complete 4-stage progressive analysis methodology
 
-Project Hosted https://osf.io/dwxa2/?view_only=193d498afc6441e990a7ebec77e16f1f
+Project Hosted https://osf.io/dwxa2/
 and on https://github.com/dagmarfraser/velocity-curvature-power-law-simulation
 and eventually UBIRA eData (Large Datasets) Simulation Database: [DOI when available] - 5GB+ SQLite database with complete parameter space results - Generated using Toolchaincallerv057.m - 14M+ configurations across biological parameter ranges.
 
