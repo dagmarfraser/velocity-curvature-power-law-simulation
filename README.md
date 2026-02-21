@@ -1,232 +1,203 @@
-# Velocity-Curvature Power Law Simulation and Analysis
+# Velocity-curvature power law: protocol characterisation framework
 
-Comprehensive framework for testing the velocity-curvature power law in biological motion analysis, implementing the vetted and legacy protocols from Fraser et al. (2025) "Biological kinematics: a detailed review of the velocity-curvature power law calculation" (Experimental Brain Research).
+How reliably can we measure the exponent β in the velocity-curvature power law, and does the answer depend on which analytical protocol we use?
 
-This repository implements a sequential two-phase analytical pipeline that generates comprehensive ground truth data and subsequently performs systematic model adequacy assessment across 14,764,680 parameter configurations, providing the first evidence-based protocol selection framework for velocity-curvature power law analysis.
+This repository contains the pre-registration, simulation code, and analysis pipeline for a systematic evaluation of six protocols for estimating β. The work follows from Fraser et al. (2025), who found that conventional protocols compress β estimates toward 1/3 in ways that could mask genuine biological variation. That matters because reported β divergences of about |0.03| between autistic and neurotypical populations (Cook et al., 2026; Fourie et al., 2024) sit right at the edge of what these methods can resolve.
 
----
+## What's in this release (and what isn't)
 
-## Documentation Hierarchy and Current Status
+This is the pre-registration release (tagged `v1.0.0-prereg`). The simulation and model adequacy code are complete and ready to run. Empirical validation tooling (Stage 5) will follow after the simulation itself is done.
 
-This repository contains multiple documentation files serving different purposes. Understanding their status and relevance helps navigate the project effectively.
+**Present:**
 
-### Primary Documentation
-- **README.md** (this file): Central documentation hub providing comprehensive project overview, installation instructions, and current methodologies
-- **revised\_prereg\_v071.md**: **CURRENT** - Pre-registration with complete 4-stage progressive analysis methodology
+- Pre-registration document (`prereg_v101.docx`)
+- Phase 1 simulation pipeline (`Toolchain_caller_v057.m`, `Toolchain_func_v032.m`)
+- Phase 2 model adequacy framework, all four stages
+- Core analytical functions: kinematic derivation, regression, curvature, synthetic data generation
+- Lin's CCC implementation, validated against R's DescTools to six decimal places
+- Xiao et al. power law analysis: MATLAB reimplementation (`power_analysis.m`) cross-validated against the original R code across all three method-selection paths (LR, NLR, model averaging) and both bootstrap variants
+- Parameter space definition with tractability levels 1 through 9
+- Database infrastructure (SQLite backend with checkpointing)
 
-Project Hosted https://osf.io/dwxa2/
-and on https://github.com/dagmarfraser/velocity-curvature-power-law-simulation
-and eventually UBIRA eData (Large Datasets)
+**Not present yet:**
 
-Multiverse Database: [DOI when available] - 5.2GB SQLite database with complete parameter space results - Generated using Toolchaincallerv057.m - 14M+ configurations across biological parameter ranges---
+- Noise characterisation wrapper (pmtm-based α and σ extraction from empirical recordings)
+- Empirical validation scripts (Stage 5, Section 7 of the pre-registration)
+- RSA/Mantel test implementation (exploratory supplementary analysis)
+- Bias correction and invertibility assessment (Section 7.7)
+- Simulation results themselves (these need roughly 200 hours of HPC time and will likely be too large for github)
+- Empirical datasets (see `data/README.md` for sources and access; not redistributed here)
 
-## Core Workflow Architecture
+## Why this exists
 
-### Analytical Pipeline
+The velocity-curvature power law, *v(t) = VGF × κ(t)^(-β)*, is widely cited as a kinematic invariant, with β close to 1/3 for typical movement. Fraser et al. (2025) showed that conventional analytical protocols (Butterworth filtering followed by log-transformed OLS regression) introduce systematic biases that push β estimates toward 1/3 regardless of the true value. If the measurement tool itself is biased toward the expected answer, you can't tell when the law genuinely holds and when it doesn't.
 
-The research framework follows a sequential two-phase approach where ground truth data generation enables comprehensive model adequacy assessment.
+This framework maps measurement precision across 14.7 million parameter configurations, so that researchers can make informed choices about which protocol to trust given their data's characteristics.
 
-**Phase 1: Ground Truth Database Generation**
-**Primary Tool:** `Toolchain_caller_v057.m`
-**Purpose:** Generate comprehensive ground truth database of synthetic trajectories with known parameters
-**Output:** Complete parameter space database (14,764,680 configurations) with ground truth β values for comparison against recovered β values, enabling definitive assessment of protocol performance across biologically plausible measurement conditions
-**Computational Requirements:** 200+ hours on BlueBEAR HPC (72-core node)
+## The six protocols
 
-**Phase 2: Model Adequacy Assessment** 
-**Primary Tool:** `ModelAdequacy_Master_v002.m`
-**Purpose:** Systematic evaluation of analytical protocol performance to answer the primary research question: Which analytical protocols enable reliable detection of the |Δβ| = 0.03-0.04 deviations documented in autism research (Cook et al., 2023; Fourie et al., 2024), and how do protocol-parameter interactions determine measurement precision?
-**Validation Status:** Framework extensively tested with synthetic data prior to ground truth database analysis (Weeks 1-2)
-**Scope:** Four-Stage Progressive Analysis Framework with evidence-based conditional modeling
-**Clinical Translation:** Quantified adequacy boundaries for robust method selection, essential for detecting small-effect kinematic markers in neurodevelopmental research
+Two kinematic derivation methods crossed with three regression approaches.
 
----
+**Kinematic derivation:**
 
-## Phase 1: Ground Truth Database Generation
+BWFD (Butterworth + finite differences) applies a second-order low-pass filter at 10 Hz with zero-phase correction, then differentiates numerically. Each differentiation step amplifies high-frequency noise, and the filter alters the noise structure.
 
-### Ground Truth Parameter Space
+SG (Savitzky-Golay) fits local polynomials with a sampling-rate-scaled window, extracting smoothed derivatives in one operation. This sidesteps the repeated-differentiation issue noted above.
 
-Toolchain_caller_v057 generates comprehensive ground truth ellipse trajectories across the complete empirical parameter space documented by Huh and Sejnowski (2015). The system creates systematic coverage of biologically plausible measurement conditions with known ground truth values:
+**Regression:**
 
-**Parameter Space Specification (14,764,680 total configurations):**
+OLS: log-transform both sides, fit a line. Simple and ubiquitous, but the log transformation can distort the underlying relationship.
 
-**Sampling Rates:** 60Hz (Android tablets), 120Hz (WACOM devices), 240Hz (iPad Pro) spanning consumer through professional motion capture spectrum
+LMLS (Levenberg-Marquardt): nonlinear fit on untransformed data. Avoids the log distortion but remains sensitive to outliers.
 
-**Generative β Values:** 21 values from 0 to 2/3, covering the empirical range observed by Huh and Sejnowski (2015) for shapes with angular frequency φ ranging from 0 to 6
+IRLS (iteratively reweighted least squares): robust nonlinear fit with bisquare weighting. Resists outliers at the cost of longer computation.
 
-**Velocity Gain Factors (VGF):** 14 exponentially spaced values (exp(4.5:0.1:5.8)) corresponding to ellipse tracing frequencies of approximately 0.5Hz to 2Hz, straddling the empirical threshold where power law recovery becomes more consistent
+**What we know and what we don't:**
 
-**Noise Characteristics:** 31 noise colors (1/f^α where α ranges from 0 to 3.0) spanning white noise of instrumentation (α=0) through pink noise of biological motion (α≈1) to black noise (α=3), accounting for spectral transformations after differentiation
+BWFD-OLS is the dominant protocol in the literature. Fraser et al. (2025) showed it introduces systematic compression. SG-LMLS and SG-IRLS are the "vetted" protocols from that paper, which don't compress to 1/3.  However this was demonstrated only for a narrow simulation.
 
-**Noise Magnitudes:** 18 levels from instrument precision (<0.1mm) through average human motor variability (<4mm based on Madirolas et al., 2022) to challenging measurement degradation (10mm)
+The four hybrid combinations (BWFD-LMLS, BWFD-IRLS, SG-OLS, SG-LMLS) haven't been simulated, indeed none of the 6 protocols has been systematically characterised across a broad spectrum of biologically plausible paramters. The interesting question is whether robust regression can compensate for the artefacts that Butterworth filtering introduces. If BWFD-IRLS performs comparably to SG-OLS, it suggests regression choice dominates overall performance. If SG-based protocols consistently outperform BWFD-based ones regardless of regression method, the derivation step is what matters and can't be rescued downstream.
 
-**Protocol Variations:** Legacy (Butterworth + finite differences) versus Vetted (Savitzky-Golay) filtering approaches with Linear, Levenberg-Marquardt Least Squares (LMLS), and Iteratively Reweighted Least Squares (IRLS) regression methods
+## Implementation
 
-**Statistical Reliability:** 5 repetitions per parameter combination ensuring robust precision assessment across the complete parameter space
+### Phase 1: simulation (`Toolchain_caller_v057.m`)
 
-**Key Configuration Switches** (edit at top of Toolchain_caller_v057.m):
+Synthetic elliptical trajectories with known β and VGF are contaminated with coloured noise and processed through all six protocols. The parameter space covers:
 
-**Debug Level Control:**
+- Sampling rates: 60, 120, 240 Hz
+- Generative β: 0 to 2/3 (21 levels)
+- Velocity gain factor: 14 levels
+- Noise colour α: 0 to 3.0 (31 levels, white through black)
+- Noise magnitude σ: 0 to 10 mm (18 levels)
+- Repetitions: 5 per condition
+
+That gives 14,764,680 total configurations, 5 GB+ of results, and roughly 200 hours on a single BlueBEAR HPC node (72 cores).
+
+### Phase 2: model adequacy (`ModelAdequacy_Master_v002.m`)
+
+Four stages, run sequentially:
+
+Stage 1 fits global linear mixed-effects models (via `fitlme`) with all parameter interactions, following an interaction-first analysis strategy with simple effects.
+
+Stage 2 checks whether the global model is adequate everywhere, using bootstrap stability, residual diagnostics, and cross-validation. The adequacy criterion is SEM < 0.011, which comes from MDC/2.77 where MDC = 0.03 is the clinically relevant difference for autism research.
+
+Stage 3 builds conditional models for parameter regions where the global model falls short.
+
+Stage 4 pulls it all together into a decision framework: given your data's noise profile and sampling rate, which protocol should you use?
+
+## Usage
+
+Requires: Database Toolbox, Parallel Computing Toolbox, Curve Fitting Toolbox, Statistics and Machine Learning Toolbox, Bioinformatics Toolbox.
+
 ```matlab
-debug = 0;  % Full production run (default for complete analysis)
-debug = 1;  % Minimal debug run (small subset, no parallel computing)
-debug = 2;  % Comprehensive debug run (rebuild shapes, no parallel computing) 
-debug = 3;  % Parallel debug run (tests parallel functionality)
+% Check your installation has everything it needs
+cd src
+validate_prereg_readiness
+
+% Quick validation run with synthetic data
+ModelAdequacy_Master_v002(2, 5, false)
+
+% Production
+Toolchain_caller_v057;                  % Phase 1
+ModelAdequacy_Master_v002(9, 5, true)   % Phase 2, full parameter space
 ```
 
-**Parameter Generation Method:**
+`Toolchain_caller_v057` accepts debug levels 0-3. Level 0 is full production; higher levels reduce the parameter space for development and testing.
+
+`ModelAdequacy_Master_v002(level, nObs, useGroundTruth, resumeStage)` takes tractability levels 1-9. Levels 1-3 are for quick prototyping; 7-9 need HPC. The optional `resumeStage` argument picks up after interruption.
+
+## Notation
+
+| Symbol | Meaning |
+|--------|---------|
+| β_gen | True (generative) β |
+| β_rec | Recovered β from a pipeline |
+| bias | β_gen - β_rec |
+| SEM | Standard error of measurement |
+| MDC | Minimal detectable change |
+| α | Noise colour exponent (0 = white, 1 = pink, 2 = red) |
+| σ | Noise magnitude in mm |
+| CCC | Lin's Concordance Correlation Coefficient |
+
+## Lin's CCC
+
+MATLAB has no built-in CCC. The custom implementation (`src/functions/linCCC_v001.m`) agrees with R's DescTools::CCC to six decimal places across all test cases.
+
 ```matlab
-useFastBatch = true;   % Fast streaming batch method (recommended, ~100x faster)
-useFastBatch = false;  % Original individual INSERT method (slow but verified)
+result = linCCC_v001(y1, y2);
 ```
 
-**Version 057 Features:**
-- **Optimized Checkpoint Interval**: 200 configurations per checkpoint for high-core efficiency, reducing database write contention
-- **Just-in-time Parallel Pool Creation**: Pool created only when needed after config generation, preventing timeout errors
-- **HPC Performance**: Eliminates SQLite serialization bottlenecks on high-core-count systems
-- **MATLAB 2022a HPC Compatibility**: All internal functions positioned for optimal HPC performance
-- **Fault Tolerance**: Checkpoint-based recovery with improved reliability
+McBride (2005) thresholds: > 0.90 excellent, 0.70-0.90 good, 0.50-0.70 moderate, < 0.50 poor.
 
-**Requirements:**
-- Database Toolbox
-- Parallel Computing Toolbox  
-- Curve Fitting Toolbox
-- Statistics and Machine Learning Toolbox
+## Empirical validation databases
 
-**Automatic Features:**
-- **Job Resumption**: Automatically detects and offers to resume incomplete jobs
-- **Environment Detection**: Automatically configures for HPC (ProcessPool) vs Local (ThreadPool) environments
-- **Resource Monitoring**: Built-in system resource monitoring with warnings
-- **Method Fallback**: Automatically falls back to verified method if fast batch fails
+Stage 5 (post-simulation) will test the framework against seven movement databases spanning species, clinical populations, and recording technologies. Data are linked rather than redistributed; see `data/README.md` for full references and access details.
 
-### Phase 1 Implementation Architecture
+| Dataset | Description |
+|---------|-------------|
+| Fraser (pilot) | iPad Pro 240 Hz shape tracing |
+| Zarandi et al. 2023 | WACOM 100 Hz, practised ellipses |
+| Dhieb et al. 2022 | Tablet drawing, ages 19-85 |
+| Cook et al. 2026 | WACOM 133 Hz, autistic vs neurotypical |
+| Dagenais et al. 2021 | Elephant trunk 3D trajectories |
+| James et al. 2020 | Bumblebee locomotion |
+| Hickman et al. 2024 | Parkinson's ON/OFF medication |
 
-The ground truth database generation implements a hierarchical structure optimized for massive parameter space exploration.
+## Project links
 
-**Toolchain_caller_v057.m** serves as the master orchestrator managing parallel computation across the complete parameter space. This system initializes SQLite database infrastructure for result storage, defines the comprehensive parameter space encompassing shapes, noise types, magnitudes, filters, and regression methods, creates optimized parallel pools for high-performance computing environments, generates parameter configurations using fast batch methods, and orchestrates parallel execution with checkpoint-based fault tolerance.
+- OSF: https://osf.io/dwxa2/
+- GitHub: https://github.com/dagmarfraser/velocity-curvature-power-law-simulation
+- Large datasets: https://edata.bham.ac.uk (UBIRA eData)
 
-**Toolchain_func_v032.m** functions as the core processing engine called for each parameter configuration. This component generates synthetic trajectories using pureCurveGenerator, applies controlled noise via generateCustomNoise_v003, implements filtering methods including Butterworth and Savitzky-Golay variants, calculates kinematics using differentiateKinematicsEBR, performs regression analysis via regressDataEBR, and returns beta values, velocity gain factors, and comprehensive error metrics.
+## Xiao et al. reimplementation
 
----
+The `power_analysis.m` function reimplements the general guidelines from Xiao et al. (2011) for choosing between log-transformed regression (LR), nonlinear regression (NLR), and AICc-weighted model averaging when fitting power law data. The `useRevised` parameter (default: `true`) controls whether bootstrap confidence intervals recompute AICc weights per resample (fixing a bug in the original R code where global weights were reused).
 
-## Phase 2: Four-Stage Progressive Analysis Framework
+`test_xiao_crossvalidate_v002.m` validates all six conditions (three method-selection paths times two switch positions) against the original R source, confirming agreement to machine precision for LR, ~10⁻⁸ for NLR (optimiser tolerance), and comparable bootstrap CIs for model averaging.
 
-### Comprehensive Model Adequacy Assessment
-
-The framework systematically evaluates model adequacy through progressive analysis of the ground truth database generated in Phase 1, implementing the methodology validated in Weeks 1-2 of the research timeline.
-
-**Stage 1: Global Interaction Modelling**
-Fits comprehensive Linear Mixed Effects Model capturing all parameter interactions across the complete parameter space: `δβ ~ βgenerated × VGF × samplingRate × filterType × regressionType × noiseMagnitude × noiseColour + (1|parameterCombination)` where δβ represents the difference between generated and recovered beta values. This global model quantifies how each parameter and their interactions systematically affect beta recovery accuracy across approximately 192 coefficients.
-
-**Stage 2: Systematic Adequacy Assessment**
-Determines whether the global model adequately captures parameter recovery patterns through three empirical criteria. Coefficient Stability assessment identifies bootstrap confidence intervals exceeding ±0.03 (the clinical significance threshold from autism research). Residual Pattern Analysis employs Cohen’s d > 0.5 threshold for systematic deviations revealing parameter regions where the global model systematically under- or over-predicts beta recovery accuracy. Prediction Accuracy Assessment uses changepoint analysis of cross-validation R² distributions to identify inflection points where model performance degrades significantly.
-
-**Stage 3: Conditional Parameter Analysis**
-Develops specialized models for parameter regions where the global model demonstrates inadequate performance, addressing specific sources of model failure identified in Stage 2. This targeted approach isolates problematic parameter combinations and develops region-specific models that account for unique interaction patterns within those measurement contexts. Each conditional model undergoes rigorous validation through regional cross-validation to ensure statistically significant improvement over the global approach.
-
-**Stage 4: Integrated Assessment Framework**
-Synthesizes the global and conditional models into a unified decision framework that optimizes analytical approach selection based on specific experimental conditions. This integration provides researchers with evidence-based guidance for choosing between global model predictions and conditional model recommendations, generating precision-stratified protocol recommendations with quantified confidence bounds.
-
-### ModelAdequacy_Master_v002 Usage Framework
 ```matlab
-% Complete 4-stage progressive analysis framework
-ModelAdequacy_Master_v002()                    % Default: Level 2, small subset analysis
-ModelAdequacy_Master_v002(2, 5, false)        % Level 2, 5 obs/combo, synthetic test data
-ModelAdequacy_Master_v002(2, 5, true)         % Level 2, ground truth database analysis
-ModelAdequacy_Master_v002(2, 5, false, 2)     % Resume from Stage 2 (crash recovery)
-
-% Tractability levels (computational feasibility versus comprehensiveness):
-% Level 1: Conservative (28.8K obs, 99.0% reduction) - Initial testing
-% Level 2: Focused (472K obs, 96.8% reduction) - Framework validation
-% Level 7-9: Comprehensive (4.4M-14.8M obs) - Complete analysis
+run('src/test_xiao_crossvalidate_v002.m')  % requires R on PATH
 ```
 
-### Expected Outcomes and Research Translation
+## File structure
 
-Based on Fraser et al. (2025), the investigation anticipates systematic protocol-parameter interactions with vetted protocols maintaining precision across broader parameter ranges while legacy approaches demonstrate progressive degradation with increasing noise magnitude and decreasing noise colour. Global modelling will characterise these performance boundaries, with conditional analysis providing targeted optimisation for challenging measurement regimes.
-
-**Anticipated Protocol Performance Patterns:**
-
-For white noise at magnitudes exceeding instrument precision (>0.1mm), progressive beta estimation degradation is expected. Pink noise beyond average human error (>3.3mm) will establish reliability boundaries for both protocols. Red noise in challenging ranges (>10mm) will demonstrate limited protocol utility, while black noise may show adequacy across all magnitudes due to spectral characteristics. These patterns will manifest as improved noise magnitude tolerance and enhanced noise colour resilience in vetted protocols compared to legacy methods.
-
-**Methodological Decision Support Deliverables:**
-
-Protocol selection flowchart based on experimental conditions will enable evidence-based analytical approach selection. Performance boundary maps will delineate protocol operational ranges across the complete parameter space. Precision lookup tables for common paradigms will provide immediate guidance for standard measurement contexts. Uncertainty quantification tools will support individual assessments with confidence bounds appropriate for detecting small-effect kinematic markers essential to neurodevelopmental research applications.
-
----
-
-## Model Adequacy Assessment Results Guide
-
-### Primary Adequacy Criteria (prereg_v071)
-**Residual Pattern Threshold**: Cohen's d > 0.5 indicates systematic bias requiring conditional analysis
-**Coefficient Instability**: Bootstrap CI > ±0.03 (clinical significance from Cook et al. 2023)
-**Cross-Validation Degradation**: >15% performance loss indicates poor regional fit
-**Minimum Region Size**: n ≥ 200 for reliable conditional modeling
-
-### Framework Execution Outcomes
-**Stage 1 → Stage 2 Assessment**: Complete 192-coefficient structure successfully fitted, demonstrating computational tractability of massive linear mixed effects models with robust optimization achieved across full parameter space.
-
-**Stage 2 → Stage 3 Decision**: Framework successfully detects both adequate and inadequate scenarios through systematic adequacy assessment, with synthetic testing validating methodology using artificially generated poor fit regions.
-
-**Stage 3 → Stage 4 Integration**: Region-specific modeling with enhanced performance metrics, systematic evaluation of hierarchical integration benefits, and synthetic enhancement methodology testing with artificial integration-worthy regions.
-
-**Framework Status Interpretation**: Complete 4-stage framework execution providing evidence-based method selection with quantified adequacy boundaries.
-
----
-
-## Data Sources and Open Science Commitment
-
-**Ground Truth Database**: Generated through Toolchain_caller_v057 requiring 200+ computational hours on 72-core HPC systems with checkpoint interval optimization, implementing the complete 14,764,680 parameter configuration space.
-
-**Framework Validation Status**: Weeks 1-2 - Four-Stage Progressive Analysis Framework validated with synthetic data, demonstrating computational feasibility across tractability levels 1-9 prior to ground truth database analysis.
-
-**Open Science Materials**: All materials are publicly available via OSF (CC BY 4.0) including complete MATLAB simulation toolchain, simulation database with characterisation metadata, precision stratification modules, and methodological decision support algorithms. The repository implements reproducible science principles with comprehensive documentation and version control.
-
-### System Requirements
-- MATLAB (R2020b or later recommended)
-- Statistics and Machine Learning Toolbox
-- Curve Fitting Toolbox
-- Database Toolbox
-- Parallel Computing Toolbox
-- PsychoPhysics Toolbox (PTB) - required only for generating baseline shape files
-
-### File Structure
-- **/src**: Complete Model Adequacy Framework (all 4 stages), and Toolchain_caller implementations
-- **/functions**: Core analysis functions and standalone tools
-- **/data**: Raw empirical datasets and processed results
-- **/results**: Analysis outputs and databases
-- Main scripts and enhanced diagnostics in root directory
-
----
-
-## Getting Started: Complete Sequential Pipeline
-
-### Prerequisites: Framework Testing and Validation
-```matlab
-% Test the model adequacy framework with synthetic data before ground truth analysis
-ModelAdequacy_Master_v002(2, 5, false)  % Level 2, 5 obs/combo, synthetic test data
+```
+├── README.md
+├── prereg_v100.docx
+├── CITATION.cff
+├── LICENSE
+├── src/
+│   ├── Toolchain_caller_v057.m       Phase 1 orchestration
+│   ├── Toolchain_func_v032.m         Phase 1 processing engine
+│   ├── ModelAdequacy_Master_v002.m   Phase 2 orchestration
+│   ├── ModelAdequacy_Stage[1-4]_*    Phase 2 stages
+│   ├── functions/
+│   │   ├── differentiateKinematicsEBR.m
+│   │   ├── regressDataEBR.m
+│   │   ├── curvatureKinematicEBR.m
+│   │   ├── generateSyntheticData_v011.m
+│   │   ├── linCCC_v001.m
+│   │   ├── defineParameterSpace.m
+│   │   └── ...
+│   ├── req/
+│   │   └── xiaoxiao/3551973/
+│   │       ├── power_analysis.m           MATLAB reimplementation of Xiao et al.'s guidelines
+│   │       ├── Sup_2_Guidelines.r         Original R source (Xiao et al.)
+│   │       └── Sup_2_Guidelines_revised.r Revised R source (bootstrap bug fix)
+│   ├── test_xiao_crossvalidate_v002.m    Cross-validates MATLAB vs R across all 3 paths × 2 switch positions
+│   ├── test_R_CCC.m                      Validates linCCC_v001 against R's DescTools::CCC
+│   └── validate_prereg_readiness.m       Pre-submission verification checks
+├── data/                             See data/README.md for sources
+├── docs/                             CCC validation demos
+├── results/                          Populated after simulation
+├── figures/
+└── reports/                          Model adequacy HTML reports (generated)
 ```
 
-### Phase 1: Ground Truth Database Generation
-```matlab
-% Generate comprehensive ground truth database (requires substantial HPC resources)
-Toolchain_caller_v057;     % Generates complete parameter space database
-```
+## References
 
-### Phase 2: Model Adequacy Assessment of Ground Truth Database
-```matlab
-% Execute complete 4-stage model adequacy assessment on ground truth data
-ModelAdequacy_Master_v002(9, 5, true)   % Level 9 comprehensive analysis, ground truth database
-```
-
-### Framework Validation Notes
-The model adequacy framework has been extensively tested using synthetic data to validate methodology before application to the computationally expensive ground truth database. This testing approach ensures robust analytical procedures prior to committing substantial computational resources to the complete pipeline execution.
-
-## License
-
-MIT License - see LICENSE file for details.
-
-## Contact
-
-Dagmar Scott Fraser - d.s.fraser@bham.ac.uk
-
----
+- Cook, J. L., Fraser, D. S., Hickman, L. J., Brewer, R., & Huh, D. (2026). Autistic kinematics diverge from the power laws that typically govern movement.
+- Fraser, D. S., Di Luca, M., & Cook, J. L. (2025). Biological kinematics: analysis protocol determines the velocity-curvature power law. *Behavior Research Methods*.
+- Lacquaniti, F., Terzuolo, C., & Viviani, P. (1983). The law relating the kinematic and figural aspects of drawing movements. *Acta Psychologica*, 54, 115-130.
+- McBride, G. B. (2005). A proposal for strength-of-agreement criteria for Lin's concordance correlation coefficient. *NIWA Client Report*.
+- Xiao, X., White, E. P., Hooten, M. B., & Durham, S. L. (2011). On the use of log-transformation vs. nonlinear regression for analyzing biological power laws. *Ecology*, 92(10), 1887-1894.

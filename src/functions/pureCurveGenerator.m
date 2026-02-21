@@ -1,7 +1,7 @@
 % code for Exp Brain Res review paper of Fraser et al., 2024
 % As outlined in Huh 2015, and in Matic and Gomez-Marin 2019
 % https://github.com/adam-matic/KinematicCognition/blob/master/app/src/main/java/com/example/kinematiccognition/PureCurveGenerator.kt
-% adapted from pyhton to MATLAB
+% adapted from python to MATLAB
 %
 % Created July 2024
 % Correspondence Dagmar Scott Fraser

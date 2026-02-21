@@ -1,0 +1,6 @@
+# Results Directory
+
+This directory stores output from simulation runs.
+
+Large .mat files are excluded from git tracking (see .gitignore).
+Archive final results to UBIRA eData for long-term preservation.

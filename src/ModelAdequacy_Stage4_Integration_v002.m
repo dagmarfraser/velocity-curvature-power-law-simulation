@@ -8,7 +8,7 @@ function ModelAdequacy_Stage4_Integration_v002(stage3_file)
 %
 % **CRITICAL ENHANCEMENTS v002**:
 %   - ENHANCED: Integration with ModelAdequacy_Master_v002 framework
-%   - FIXED: Updated to work with ModelAdequacy_Stage3_Conditional_v002 results
+%   - FIXED: Updated to work with ModelAdequacy_Stage3_Conditional_v004 results
 %   - IMPROVED: Variable naming consistency and pipeline compatibility
 %   - ENHANCED: Error handling and validation throughout
 %   - FIXED: Proper naming alignment (requires_integration vs proceeds_to_integration)
@@ -42,7 +42,7 @@ function ModelAdequacy_Stage4_Integration_v002(stage3_file)
 %   - Parameter Interpretation Coherence: Maintained significance and clinical interpretability
 %
 % **PIPELINE INTEGRATION**:
-%   Input:  stage3_conditional_*.mat (from ModelAdequacy_Stage3_Conditional_v002)
+%   Input:  stage3_conditional_*.mat (from ModelAdequacy_Stage3_Conditional_v004)
 %   Output: stage4_integration_*.mat (final hierarchical model results)
 %   Final:  model_adequacy_FINAL_*.html (comprehensive framework report)
 %
@@ -57,7 +57,7 @@ if nargin < 1
     % Find latest Stage 3 conditional analysis results
     stage3_files = dir('stage3_conditional_*.mat');
     if isempty(stage3_files)
-        error('No Stage 3 conditional results found. Please run ModelAdequacy_Stage3_Conditional_v002 first.');
+        error('No Stage 3 conditional results found. Please run ModelAdequacy_Stage3_Conditional_v004 first.');
     end
     [~, latest_idx] = max([stage3_files.datenum]);
     stage3_file = stage3_files(latest_idx).name;

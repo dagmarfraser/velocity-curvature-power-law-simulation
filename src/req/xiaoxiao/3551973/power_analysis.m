@@ -22,11 +22,13 @@ addRequired(p, 'y', @(y) isnumeric(y) && isvector(y) && ~any(isnan(y) | isinf(y)
 addParameter(p, 'CI_boot', true, @islogical);
 addParameter(p, 'diagno', true, @islogical);
 addParameter(p, 'output_plot', false, @islogical);
+addParameter(p, 'useRevised', true, @islogical);  % revised: recompute weights per bootstrap sample
 parse(p, x, y, varargin{:});
 
 CI_boot = p.Results.CI_boot;
 diagno = p.Results.diagno;
 output_plot = p.Results.output_plot;
+useRevised = p.Results.useRevised;
 
 % Ensure x and y are column vectors
 x = x(:);
@@ -112,8 +114,27 @@ else
             a_nlr_boot = model_nlr_boot.Coefficients.Estimate(1);
             b_nlr_boot = model_nlr_boot.Coefficients.Estimate(2);
             
-            a_boot = a_lr_boot * weight_logn + a_nlr_boot * weight_norm;
-            b_boot = b_lr_boot * weight_logn + b_nlr_boot * weight_norm;
+            if useRevised
+                % Revised: recompute weights from bootstrap sample
+                sd_lr_boot = std(log(y_boot) - (log(a_lr_boot) + b_lr_boot * log(x_boot)));
+                sd_nlr_boot = std(y_boot - a_nlr_boot * x_boot.^b_nlr_boot);
+                l_logn_boot = sum(log(lognpdf(y_boot, log(a_lr_boot * x_boot.^b_lr_boot), sd_lr_boot)));
+                l_norm_boot = sum(log(normpdf(y_boot, a_nlr_boot * x_boot.^b_nlr_boot, sd_nlr_boot)));
+                AICc_logn_boot = 2*k - 2*l_logn_boot + 2*k*(k+1)/(n-k-1);
+                AICc_norm_boot = 2*k - 2*l_norm_boot + 2*k*(k+1)/(n-k-1);
+                AICc_min_boot = min(AICc_logn_boot, AICc_norm_boot);
+                w_logn_boot = exp(-(AICc_logn_boot - AICc_min_boot)/2);
+                w_norm_boot = exp(-(AICc_norm_boot - AICc_min_boot)/2);
+                wt_logn = w_logn_boot / (w_logn_boot + w_norm_boot);
+                wt_norm = w_norm_boot / (w_logn_boot + w_norm_boot);
+            else
+                % Original: use global weights (matches Sup_2_Guidelines.r)
+                wt_logn = weight_logn;
+                wt_norm = weight_norm;
+            end
+            
+            a_boot = a_lr_boot * wt_logn + a_nlr_boot * wt_norm;
+            b_boot = b_lr_boot * wt_logn + b_nlr_boot * wt_norm;
             
             boot_estimates(i, :) = [a_boot, b_boot];
         end

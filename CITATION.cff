@@ -1,18 +1,52 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
-- family-names: "Fraser"
-  given-names: "Dagmar Scott" 
-  orcid: "https://orcid.org/0000-0002-9241-7772"
-- family-names: "Di Luca"
-  given-names: "Massimiliano" 
-  orcid: "https://orcid.org/0000-0003-3085-7251"
-- family-names: "Cook"
-  given-names: "Jennifer Louise" 
-  orcid: "https://orcid.org/0000-0003-4916-8667"
+  - family-names: "Fraser"
+    given-names: "Dagmar Scott"
+    orcid: "https://orcid.org/0000-0002-9241-7772"
+    affiliation: "University of Birmingham"
+  - family-names: "Di Luca"
+    given-names: "Massimiliano"
+    orcid: "https://orcid.org/0000-0003-3085-7251"
+    affiliation: "University of Birmingham"
+  - family-names: "Cook"
+    given-names: "Jennifer Louise"
+    orcid: "https://orcid.org/0000-0003-4916-8667"
+    affiliation: "University of Birmingham"
 title: "Velocity-Curvature Power Law Protocol Simulation"
-version: 0.9
+version: 1.0.0
 identifiers:
-doi: 10.5281/zenodo.17047450
-date-released: 2025-09-13
+  - type: doi
+    value: "10.5281/zenodo.17047450"
+date-released: "2026-02-05"
 url: "https://github.com/dagmarfraser/velocity-curvature-power-law-simulation"
+repository-code: "https://github.com/dagmarfraser/velocity-curvature-power-law-simulation"
+license: MIT
+keywords:
+  - power-law
+  - kinematics
+  - motor-control
+  - velocity-curvature
+  - matlab
+  - autism
+  - movement-analysis
+abstract: >-
+  Systematic characterisation framework for velocity-curvature power law 
+  analytical protocols. Evaluates six pipeline combinations across 14.7 million
+  parameter configurations to determine measurement precision boundaries for
+  detecting small effect sizes (|Δβ| ≈ 0.03) in clinical populations.
+references:
+  - type: article
+    authors:
+      - family-names: "Fraser"
+        given-names: "Dagmar Scott"
+      - family-names: "Di Luca"
+        given-names: "Massimiliano"
+      - family-names: "Cook"
+        given-names: "Jennifer Louise"
+    title: "Biological kinematics: A detailed review of the velocity-curvature power law calculation"
+    journal: "Experimental Brain Research"
+    volume: 243
+    pages: 107
+    year: 2025
+    doi: "10.1007/s00221-025-07065-0"

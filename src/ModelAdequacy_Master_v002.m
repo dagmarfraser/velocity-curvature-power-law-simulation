@@ -26,7 +26,7 @@ function ModelAdequacy_Master_v002(tractability_level, n_obs_per_combo, use_data
 %            → Quantitative adequacy decision based on clinical thresholds
 %            → Produces stage2_adequacy_*.mat with adequacy assessment
 %
-%   Stage 3: Conditional Parameter Analysis (ModelAdequacy_Stage3_Conditional_v002)
+%   Stage 3: Conditional Parameter Analysis (ModelAdequacy_Stage3_Conditional_v004)
 %            → Only executed if Stage 2 identifies poor fit regions
 %            → Region-specific modeling for inadequate parameter combinations
 %            → Advanced hierarchical analysis for complex interaction patterns
@@ -493,7 +493,7 @@ if requires_conditional && start_from_stage <= 3
         try
             % BLUEBEAR SAFETY: Execute conditional parameter analysis with monitoring
             fprintf('\n🔬 Executing Stage 3 with BlueBear memory management...\n');
-            ModelAdequacy_Stage3_Conditional_v002(stage2_file);
+            ModelAdequacy_Stage3_Conditional_v004(stage2_file);
             
             % Verify Stage 3 completion and locate results file
             stage3_files = dir(stage3_pattern);
@@ -534,7 +534,7 @@ if requires_conditional && start_from_stage <= 3
             elseif contains(ME.message, 'Undefined function')
                 fprintf('⚠️  Stage 3 implementation not yet available: %s\n', ME.message);
                 fprintf('🔧 DEVELOPMENT STATUS:\n');
-                fprintf('  • Stage 3 (ModelAdequacy_Stage3_Conditional_v002) is planned for future implementation\n');
+                fprintf('  • Stage 3 (ModelAdequacy_Stage3_Conditional_v004) is planned for future implementation\n');
                 fprintf('  • Current framework successfully identifies poor fit regions in Stage 2\n');
                 fprintf('  • Manual conditional analysis can be performed using Stage 2 region identification\n');
                 fprintf('  • Framework will be enhanced with automatic conditional modeling in future versions\n\n');
