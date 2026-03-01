@@ -94,7 +94,7 @@ Requires: Database Toolbox, Parallel Computing Toolbox, Curve Fitting Toolbox, S
 cd src
 validate_prereg_readiness
 
-% Quick validation run with synthetic data
+% Quick validation run with ersatz data (random response values, no simulation)
 ModelAdequacy_Master_v002(2, 5, false)
 
 % Production
