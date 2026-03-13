@@ -1,4 +1,4 @@
-function [xyDelta, curvatureDelta, returnk, returnShape, divergedTrajCount] = baselineShapesFunc_v003(rawXY, rawCurvature, shapeNum, debugInput)
+function [xyDelta, curvatureDelta, returnk, returnShape, divergedTrajCount] = baselineShapesFunc_v003(rawXY, rawCurvature, shapeNum, debugInput, shapeData)
 
 % inputs
 % rawXY - WACOM tablet points.. generalise to Lydia's later
@@ -21,7 +21,9 @@ returnk = NaN;
 divergedTrajCount= NaN;
 
 % sampling frequency for data recovery
-sampleFrequency = 133 ; %fixed in early version, will later generalise to Lydia's ~60
+% NOTE: sampleFrequency here is ONLY used to name the cached shape file.
+% The shape geometry is fs-independent; 60 matches the pre-generated .mat files.
+sampleFrequency = 60;
 shapeAngFreq = shapeNum;% Ellipse is 6th in the OG Frequency List, 7th in ours DSF
 
 debug = debugInput;
@@ -63,15 +65,21 @@ for shapesNum = 1:length(Frequency)
 
 end
 
-%% check if this already exists, otherwise regenerate
-saveName = ['baselineShp', num2str(shapeAngFreq),'_', num2str(sampleFrequency),'Hz.mat'];
-if isfile(saveName)
-    load(saveName)
+%% use pre-loaded shape data if supplied, otherwise load from cache
+if nargin >= 5 && isstruct(shapeData) && isfield(shapeData, 'pathXYresample') && isfield(shapeData, 'K')
+    pathXYresample = shapeData.pathXYresample;
+    K              = shapeData.K;
+    pathXY         = pathXYresample;
 else
-    %%generate the pure shape as per H&S
-    % note the mistmatch is shapeAngFreq...
-    % ellipse is 6 in OG list, 7 in our paper implementation... DSF
-    [pathXYtrue, thetaCurve] = JCL_generateCurvesFunc(shapeAngFreq-1, rectXY, offCentre);
+    thisDir  = fileparts(mfilename('fullpath'));
+    saveName = fullfile(thisDir, ['baselineShp', num2str(shapeAngFreq), '_', num2str(sampleFrequency), 'Hz.mat']);
+    if isfile(saveName)
+        load(saveName)
+    else
+        %%generate the pure shape as per H&S
+        % note the mistmatch is shapeAngFreq...
+        % ellipse is 6 in OG list, 7 in our paper implementation... DSF
+        [pathXYtrue, thetaCurve] = JCL_generateCurvesFunc(shapeAngFreq-1, rectXY, offCentre);
     % this is the original display function from Huh and Sejnowski
 
     % functional implementation of JCL_generateCurves.... but the points on
@@ -140,8 +148,8 @@ else
 
     % methods are broadly equivalent
 
-    save(saveName, 'pathXY','pathXYresample' , "k", 'K', "splX", "splY");
-
+        save(saveName, 'pathXY','pathXYresample' , "k", 'K', "splX", "splY");
+    end
 end
 
 returnShape = pathXY;
