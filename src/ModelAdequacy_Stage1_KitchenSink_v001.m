@@ -1,5 +1,5 @@
 function ModelAdequacy_Stage1_KitchenSink_v001(use_database, n_obs_per_combo, tractability_level, use_regime_based_generation)
-% MODELADEQUACY_STAGE1_KITCHENSINK_V012 - Model Adequacy Framework Stage 1
+% MODELADEQUACY_STAGE1_KITCHENSINK_V001 - Model Adequacy Framework Stage 1
 % adapted from DemoHierarchicalDrillDown_v012_TrueSubset.m
 % 
 % **MODEL ADEQUACY FRAMEWORK STAGE 1: KITCHEN SINK MODEL (COMPLETE)**
@@ -35,9 +35,9 @@ function ModelAdequacy_Stage1_KitchenSink_v001(use_database, n_obs_per_combo, tr
 %   9 = 'Full-Original' (14.8M obs, 0.0% reduction)    - Complete space [PROVEN]
 %
 % **USAGE**:
-%   ModelAdequacy_Stage1_KitchenSink_v012()                     % Auto-restart if crashed
-%   ModelAdequacy_Stage1_KitchenSink_v012(false, 5, 2)         % Focused with n=5 obs/combo
-%   ModelAdequacy_Stage1_KitchenSink_v012(false, 5, 9)         % Full space with n=5 obs/combo
+%   ModelAdequacy_Stage1_KitchenSink_v001()                     % Auto-restart if crashed
+%   ModelAdequacy_Stage1_KitchenSink_v001(false, 5, 2)         % Focused with n=5 obs/combo
+%   ModelAdequacy_Stage1_KitchenSink_v001(false, 5, 9)         % Full space with n=5 obs/combo
 %
 % **OUTPUT**: stage1_results.mat containing kitchen sink model results and data for Stage 2
 %
@@ -49,7 +49,7 @@ function ModelAdequacy_Stage1_KitchenSink_v001(use_database, n_obs_per_combo, tr
 % the foundational global model for subsequent adequacy assessment stages.
 %
 % Author: Fraser, D.S. (2025)
-% Version: v012 - Model Adequacy Framework Stage 1 with complete crash-safe functions
+% Version: v001 - Model Adequacy Framework Stage 1 with complete crash-safe functions
 % Framework: Model Adequacy Assessment (Fraser et al. 2025, prereg v071)
 
 if nargin < 1, use_database = false; end

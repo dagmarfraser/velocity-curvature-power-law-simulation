@@ -806,6 +806,7 @@ if fid == -1
     error('Could not create report file: %s', report_file);
 end
 
+writeFailed = false;
 try
     % HTML header with enhanced styling
     fprintf(fid, '<!DOCTYPE html>\n<html>\n<head>\n');
@@ -863,8 +864,13 @@ try
     fprintf(fid, '<p><em>Fraser, D.S. (2025) - Model Adequacy Framework for Power Law Parameter Recovery</em></p>\n');
     fprintf(fid, '</body>\n</html>\n');
 
-finally
-    fclose(fid);
+catch ME_report
+    writeFailed = true;
+    warning('ModelAdequacy:ReportWriteError', 'Error writing report: %s', ME_report.message);
+end
+fclose(fid);
+if writeFailed
+    rethrow(ME_report);
 end
 
 fprintf('✅ Basic final report generated: %s\n', report_file);

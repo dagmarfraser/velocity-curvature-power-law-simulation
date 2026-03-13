@@ -31,7 +31,7 @@ try
 
     % ===== CONFIGURATION TOGGLES =====
     % Debug level: 0=full run, 1=minimal debug, 2=rebuild shapes, 3=parallel debug
-    debug = 2;
+    debug = 3;
     
     % PARAMETER GENERATION METHOD TOGGLE
     % true = Use new fast streaming batch method (recommended)
@@ -42,6 +42,7 @@ try
     addpath(genpath('functions'));
     addpath(genpath('req'));
     addpath(genpath('utils'));
+    addpath(pwd);
     commandwindow;
 
     % Setup paths and database connection
@@ -295,16 +296,18 @@ else
         end
         
     catch ME
-        if useFastBatch
+        isMissingFunction = strcmp(ME.identifier, 'MATLAB:UndefinedFunction') || ...
+            contains(ME.message, 'Undefined function');
+        if useFastBatch && isMissingFunction
             warning('MATLAB:PowerLaw:BatchMethodFailed', ...
-                'Fast batch method failed (%s), falling back to original method...', ME.message);
+                'Batch function not found, falling back to original method...');
             generationTimer = tic;
             configIDs = generateParameterConfigsDB_fixed(conn, paramSpace);
             generationTime = toc(generationTimer);
             totalConfigs = length(configIDs);
             fprintf('Fallback to original method completed in %s\n', formatTime(generationTime));
         else
-            rethrow(ME);
+            rethrow(ME); % All other errors are fatal
         end
     end
 
@@ -590,7 +593,7 @@ parfor i = 1:length(subChunkIDs)
         end
 
         taskStartTime = tic;
-        localCfg = createWorkerConfig(params, cfg.versionTc);
+        localCfg = createWorkerConfig(params, cfg);
 
         [DATA, beta, VGF, duration, errMadirolas, errCurvature] = ...
             Toolchain_func_v032(localIdx, totalConfigs, localCfg);
@@ -638,7 +641,7 @@ parfor i = 1:length(subChunkIDs)
         close(localConn);
 
         taskStartTime = tic;
-        localCfg = createWorkerConfig(params, cfg.versionTc);
+        localCfg = createWorkerConfig(params, cfg);
 
         [DATA, beta, VGF, duration, errMadirolas, errCurvature] = ...
             Toolchain_func_v032(localIdx, totalConfigs, localCfg);
@@ -667,35 +670,23 @@ end
 resultBatch = resultBatch(~cellfun(@isempty, resultBatch));
 end
 
-function localCfg = createWorkerConfig(params, versionTc)
-% Create configuration for a worker with pixelScale correctly included
-localCfg = struct();
-localCfg.versionTc = versionTc;
-localCfg.ShapeChoice = double(params.shape_type);
-localCfg.fs = double(params.sampling_rate);
-localCfg.powerLaw = double(params.generated_beta);
-localCfg.yGain = double(params.vgf_value);
-localCfg.noiseType = double(params.noise_type);
-localCfg.filterType = double(params.filter_type);
+function localCfg = createWorkerConfig(params, cfg)
+% Create per-trial config by inheriting static settings from cfg,
+% then overlaying the trial-specific parameters from params.
+% createConfigSettings() is the single source of truth for all static fields.
+localCfg = cfg;
+
+% Per-trial parameters from the parameter space database
+localCfg.ShapeChoice  = double(params.shape_type);
+localCfg.fs           = double(params.sampling_rate);
+localCfg.powerLaw     = double(params.generated_beta);
+localCfg.yGain        = double(params.vgf_value);
+localCfg.noiseType    = double(params.noise_type);
+localCfg.filterType   = double(params.filter_type);
 localCfg.filterParams = params.filter_params;
-localCfg.regressType = double(params.regress_type);
-localCfg.TrialNum = double(params.trial_num);
-
-localCfg.pixelScale = 480 / 100;
-localCfg.noiseStdDev = double(params.noise_magnitude) * localCfg.pixelScale;
-
-localCfg.orbitCount = 6;
-localCfg.saveAll = 0;
-localCfg.display = [0 0 0];
-localCfg.canvas = [1920; 1080];
-localCfg.edgeClip = 50;
-localCfg.curvatureChoice = 1;
-localCfg.limitBreak = 0;
-localCfg.displayGraphs = 0;
-localCfg.MaticSpline = 0;
-localCfg.resample = 20;
-localCfg.variantPowerLaw = 1;
-localCfg.rethrowErrors = false;
+localCfg.regressType  = double(params.regress_type);
+localCfg.TrialNum     = double(params.trial_num);
+localCfg.noiseStdDev  = double(params.noise_magnitude) * cfg.pixelScale;
 end
 
 function storeResultsBatch(conn, resultBatch)

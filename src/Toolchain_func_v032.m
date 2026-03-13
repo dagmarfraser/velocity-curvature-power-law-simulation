@@ -129,7 +129,7 @@ try
     shapeAngFreq = str2num(shapeStr{shapeIndex});
     
     % Generate synthetic data using the improved v011 function
-    [xt, yt, k_local, v_local] = generateSyntheticData_v011(shapeIndex, canvas, fs, powerLaw, yGain, orbitCount, resample, forceRegen, genDebug);
+    [xt, yt, k_local, v_local, shapeData] = generateSyntheticData_v011(shapeIndex, canvas, fs, powerLaw, yGain, orbitCount, resample, forceRegen, genDebug);
 
     genDuration = length(xt)/fs;
 
@@ -282,13 +282,13 @@ try
 
     % Add detailed diagnostic output for troubleshooting
     if size(dx, 1) <= 2*edgeClip || size(dy, 1) <= 2*edgeClip
-        fprintf('ARRAY SIZE DIAGNOSTIC:\\n');
-        fprintf('  xNoise: %dx%d (length=%d)\\n', size(xNoise, 1), size(xNoise, 2), length(xNoise));
-        fprintf('  yNoise: %dx%d (length=%d)\\n', size(yNoise, 1), size(yNoise, 2), length(yNoise));
-        fprintf('  dx: %dx%d\\n', size(dx, 1), size(dx, 2));
-        fprintf('  dy: %dx%d\\n', size(dy, 1), size(dy, 2));
-        fprintf('  edgeClip: %d\\n', edgeClip);
-        fprintf('  filterType: %d\\n', filterType);
+        fprintf('ARRAY SIZE DIAGNOSTIC:\n');
+        fprintf('  xNoise: %dx%d (length=%d)\n', size(xNoise, 1), size(xNoise, 2), length(xNoise));
+        fprintf('  yNoise: %dx%d (length=%d)\n', size(yNoise, 1), size(yNoise, 2), length(yNoise));
+        fprintf('  dx: %dx%d\n', size(dx, 1), size(dx, 2));
+        fprintf('  dy: %dx%d\n', size(dy, 1), size(dy, 2));
+        fprintf('  edgeClip: %d\n', edgeClip);
+        fprintf('  filterType: %d\n', filterType);
         error('Not enough data points after edge clipping. dx size: %dx%d, dy size: %dx%d, edgeClip: %d', ...
             size(dx, 1), size(dx, 2), size(dy, 1), size(dy, 2), edgeClip);
     end
@@ -339,40 +339,40 @@ try
     trajY = dy(edgeClip:end-edgeClip,1);
 
     % Make sure shapeChoice is valid for baselineShapesFunc_v003
-    [xyDelta, curvatureDelta, returnk, returnShape, divergedTrajCount] = baselineShapesFunc_v003([trajX trajY], curvature, shapeIndex, 0);
+    [xyDelta, curvatureDelta, returnk, returnShape, divergedTrajCount] = baselineShapesFunc_v003([trajX trajY], curvature, shapeIndex, 0, shapeData);
 
     errorMadirolas = nanmean(abs(xyDelta));
     errorCurvature = nanmean(curvatureDelta);
     
 catch ME
     % Handle errors more gracefully with detailed information
-    fprintf('ERROR in Toolchain_func_v032: %s\\n', ME.message);
+    fprintf('ERROR in Toolchain_func_v032: %s\n', ME.message);
     
     % Add diagnostic information for common error patterns
     if contains(ME.message, 'Unable to perform assignment') || contains(ME.message, 'Arrays have incompatible sizes')
-        fprintf('ASSIGNMENT/ARRAY SIZE DIAGNOSTIC:\\n');
+        fprintf('ASSIGNMENT/ARRAY SIZE DIAGNOSTIC:\n');
         if exist('dx', 'var')
-            fprintf('  dx size: %dx%d\\n', size(dx));
+            fprintf('  dx size: %dx%d\n', size(dx));
         else
-            fprintf('  dx: not created yet\\n');
+            fprintf('  dx: not created yet\n');
         end
         if exist('dy', 'var')
-            fprintf('  dy size: %dx%d\\n', size(dy));
+            fprintf('  dy size: %dx%d\n', size(dy));
         else
-            fprintf('  dy: not created yet\\n');
+            fprintf('  dy: not created yet\n');
         end
         if exist('xNoise', 'var') && exist('yNoise', 'var')
-            fprintf('  xNoise: %dx%d (length=%d)\\n', size(xNoise, 1), size(xNoise, 2), length(xNoise));
-            fprintf('  yNoise: %dx%d (length=%d)\\n', size(yNoise, 1), size(yNoise, 2), length(yNoise));
+            fprintf('  xNoise: %dx%d (length=%d)\n', size(xNoise, 1), size(xNoise, 2), length(xNoise));
+            fprintf('  yNoise: %dx%d (length=%d)\n', size(yNoise, 1), size(yNoise, 2), length(yNoise));
         end
         if exist('filterType', 'var')
-            fprintf('  filterType: %d\\n', filterType);
+            fprintf('  filterType: %d\n', filterType);
         end
         if exist('filterParams', 'var')
-            fprintf('  filterParams: %s\\n', mat2str(filterParams));
+            fprintf('  filterParams: %s\n', mat2str(filterParams));
         end
         if exist('edgeClip', 'var')
-            fprintf('  edgeClip: %d\\n', edgeClip);
+            fprintf('  edgeClip: %d\n', edgeClip);
         end
     end
     
