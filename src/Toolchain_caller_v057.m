@@ -30,19 +30,21 @@ try
     rng('default');
 
     % ===== CONFIGURATION TOGGLES =====
-    % Debug level: 0=full run, 1=minimal debug, 2=rebuild shapes, 3=parallel debug
-    debug = 3;
+    % Debug level: 0=full run, 1=minimal debug, 2=rebuild shapes,
+    %              3=parallel debug, 4=DB logic test (648 configs, no toolchain)
+    debug = 4;
     
     % PARAMETER GENERATION METHOD TOGGLE
     % true = Use new fast streaming batch method (recommended)
     % false = Use original individual INSERT method (slow but verified)
     useFastBatch = true;
     
-    % Add required paths
-    addpath(genpath('functions'));
-    addpath(genpath('req'));
-    addpath(genpath('utils'));
-    addpath(pwd);
+    % Add required paths (anchored to caller file location, HPC-safe)
+    callerDir = fileparts(mfilename('fullpath'));  % .../src
+    addpath(genpath(fullfile(callerDir, 'functions')));
+    addpath(genpath(fullfile(callerDir, 'req')));
+    addpath(genpath(fullfile(callerDir, 'utils')));
+    addpath(callerDir);
     commandwindow;
 
     % Setup paths and database connection
@@ -56,6 +58,7 @@ try
 
     % Create configuration settings
     cfg = createConfigSettings();
+    cfg.dbTestMode = (debug == 4);  % bypass Toolchain_func; exercise DB logic only
 
     % Setup checkpoints and initialize job with SELECTED METHOD
     [configIDs, startIdx, totalConfigs, generationTime] = ...
@@ -103,8 +106,10 @@ end
 
 function [conn, dbFile, masterDir, jobIdentifier, isHPC] = setupEnvironment(debug)
 % Setup database and environment variables
-localDir = pwd;
-masterDir = localDir(1:end-3);
+% Use mfilename to anchor masterDir regardless of pwd (HPC-safe)
+thisFile = mfilename('fullpath');          % .../PowerLawSimulationPreReg/src/Toolchain_caller_v057
+srcDir   = fileparts(thisFile);            % .../PowerLawSimulationPreReg/src
+masterDir = fileparts(srcDir);             % .../PowerLawSimulationPreReg
 
 if debug
     dbFile = fullfile(masterDir, 'results', 'powerlaw_debug_v057.db');
@@ -156,8 +161,8 @@ try
         rowsToShow = min(5, height(incompleteJobs));
         for i = 1:rowsToShow
             jobID = incompleteJobs.job_id{i};
-            lastIdx = incompleteJobs.last_completed_idx(i);
-            totalIdx = incompleteJobs.total_configs(i);
+            lastIdx = double(incompleteJobs.last_completed_idx(i));
+            totalIdx = double(incompleteJobs.total_configs(i));
             progress = (lastIdx / totalIdx) * 100;
             
             fprintf('[%d] %s - Progress: %d/%d (%.1f%%)\n', ...
@@ -201,7 +206,7 @@ end
 
 function [parallelSettings, debugCores] = determineParallelSettings(debug, isHPC)
 % Determine parallel settings but DON'T create pool yet (v056 fix)
-debugCores = (debug > 0 && debug < 3);
+debugCores = (debug > 0 && debug < 3) || (debug == 4);
 
 if ~debugCores
     if isHPC
@@ -227,6 +232,8 @@ else
         disp('MINIMAL DEBUG RUN - No parallel computing');
     elseif debug == 2
         disp('COMPREHENSIVE DEBUG RUN - No parallel computing');
+    elseif debug == 4
+        disp('DB LOGIC TEST - No parallel computing (648 configs, synthetic results)');
     end
 end
 end
@@ -489,19 +496,33 @@ for i = 1:length(chunkIDs)
     cfg.regressType = double(params.regress_type);
     cfg.TrialNum = double(params.trial_num);
 
-    try
-        [DATA, beta, VGF, duration, errMadirolas, errCurvature] = ...
-            Toolchain_func_v032(localIdx, totalConfigs, cfg);
-
-        results = struct('beta', beta, 'vgf', VGF, 'duration', duration, ...
-            'err_madirolas', errMadirolas, 'err_curvature', errCurvature, ...
-            'success', DATA);
-
+    if isfield(cfg, 'dbTestMode') && cfg.dbTestMode
+        % DB logic test: skip toolchain, store synthetic result to exercise
+        % batch insert, checkpoint writes, and job completion logic only
+        results = struct( ...
+            'beta',            params.generated_beta + 0.001 * randn(), ...
+            'vgf',             params.vgf_value, ...
+            'duration',        10.0, ...
+            'err_madirolas',   0.021, ...
+            'err_curvature',   0.001, ...
+            'success',         true, ...
+            'processing_time', 0.001);
         storeResultDB(conn, configID, workerID, results);
-    catch ME
-        warning('MATLAB:PowerLaw:ConfigError', 'Error processing config %d: %s', configID, ME.message);
-        errorResult = struct('error_message', ME.message, 'success', false);
-        storeResultDB(conn, configID, workerID, errorResult);
+    else
+        try
+            [DATA, beta, VGF, duration, errMadirolas, errCurvature] = ...
+                Toolchain_func_v032(localIdx, totalConfigs, cfg);
+
+            results = struct('beta', beta, 'vgf', VGF, 'duration', duration, ...
+                'err_madirolas', errMadirolas, 'err_curvature', errCurvature, ...
+                'success', DATA);
+
+            storeResultDB(conn, configID, workerID, results);
+        catch ME
+            warning('MATLAB:PowerLaw:ConfigError', 'Error processing config %d: %s', configID, ME.message);
+            errorResult = struct('error_message', ME.message, 'success', false);
+            storeResultDB(conn, configID, workerID, errorResult);
+        end
     end
 
     if mod(i, checkpointInterval) == 0 || i == length(chunkIDs)

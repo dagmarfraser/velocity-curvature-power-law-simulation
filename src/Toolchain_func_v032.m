@@ -29,7 +29,10 @@ parLoop = double(parLoop);
 loopCount = double(loopCount);
 
 % Initialize critical variables
-localPath = pwd;
+% Anchor paths to this file's location so HPC jobs launched from any pwd work correctly
+thisFile  = mfilename('fullpath');        % .../src/Toolchain_func_v032
+localPath = fileparts(thisFile);          % .../src
+masterDir = fileparts(localPath);         % .../PowerLawSimulationPreReg
 versionTc = cfg.versionTc;
 cfg.Serialise = parLoop;
 
@@ -394,7 +397,7 @@ padNum = num2str(cfg.Serialise,'%09.f');
 % this assumes we are running from the source directory - and we have our
 % standard file structure...
 if cfg.saveAll
-    save(fullfile([localPath(1:end-3) 'data' filesep 'processed' filesep 'synthetic' filesep versionTc '_', padNum, '_serial']));
+    save(fullfile(masterDir, 'data', 'processed', 'synthetic', [versionTc '_' padNum '_serial']));
 end
 
 % Get filter and regress type strings for output

@@ -108,12 +108,13 @@ if ~isnumeric(start_from_stage) || start_from_stage < 1 || start_from_stage > 4 
          '  Use 1 for complete analysis, 2-4 for resuming after crash.']);
 end
 
-% Add essential function directories to MATLAB path
-if exist('functions', 'dir')
-    addpath(genpath('functions')); % Variable name mapping and utility functions
+% Add essential function directories to MATLAB path (anchored to this file)
+masterDir_MA = fileparts(mfilename('fullpath'));  % .../src
+if exist(fullfile(masterDir_MA, 'functions'), 'dir')
+    addpath(genpath(fullfile(masterDir_MA, 'functions')));
 end
-if exist('utils', 'dir')
-    addpath(genpath('utils')); % Additional analysis utilities if present
+if exist(fullfile(masterDir_MA, 'utils'), 'dir')
+    addpath(genpath(fullfile(masterDir_MA, 'utils')));
 end
 
 %% CONFIGURATION CONSTANTS
