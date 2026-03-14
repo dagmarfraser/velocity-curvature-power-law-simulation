@@ -5,7 +5,8 @@ function paramSpace = defineParameterSpace(debug)
 % velocity-curvature power law calculations based on the debug level.
 %
 % Input:
-%   debug - Debug level (0: maximal run, 1: minimal debug, 2: rebuild shapes, 3: parallel debug)
+%   debug - Debug level (0: maximal run, 1: minimal debug, 2: rebuild shapes,
+%           3: parallel debug, 4: DB logic test - 648 configs, no toolchain computation)
 
 % delete all the shapes x sampling freq files before running debug 2
 %
@@ -30,6 +31,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run (medium size for testing parallel performance)
     paramSpace.samplingRates = [120, 240]; % Hz
+elseif debug == 4
+    % DB logic test: enough configs to span 3 checkpoint intervals (648 total)
+    paramSpace.samplingRates = [60, 120]; % Hz
 else % redo the shapes at at frequencies
     % Comprehensive debug run
     paramSpace.samplingRates = [60, 120, 240]; % Hz
@@ -49,6 +53,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.shapes = [6]; % Ellipse (φ = 2) and φ = 3
+elseif debug == 4
+    % DB logic test
+    paramSpace.shapes = [6]; % Ellipse only
 else
     % shapes rebuild
     paramSpace.shapes = [6]; % Ellipse (φ = 2) and φ = 3
@@ -65,6 +72,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.generatedBetas = [0, 1/3, 2/3]; % Full range but fewer points
+elseif debug == 4
+    % DB logic test
+    paramSpace.generatedBetas = [0, 1/3, 2/3]; % 3 values
 else
     % Comprehensive debug run
     paramSpace.generatedBetas = [1/3]; % Classic and two deviations
@@ -82,6 +92,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.vgfValues = [exp(5.0), exp(5.2), exp(5.5)]; % Three different tempos
+elseif debug == 4
+    % DB logic test
+    paramSpace.vgfValues = [exp(4.8), exp(5.2), exp(5.6)]; % 3 VGF values
 else
     % Comprehensive debug run
     paramSpace.vgfValues = [exp(5.2)]; % ~1Hz and ~0.8Hz tempos
@@ -99,6 +112,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.noiseTypes = [0, 2]; % White and brown/red
+elseif debug == 4
+    % DB logic test
+    paramSpace.noiseTypes = [0, 2]; % White and brown/red
 else
     % Comprehensive debug run
     paramSpace.noiseTypes = [1]; % White, pink, brown/red
@@ -115,6 +131,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.noiseMagnitudes = [0, 1, 2]; % No, medium, high
+elseif debug == 4
+    % DB logic test
+    paramSpace.noiseMagnitudes = [0, 0.5, 1]; % 3 noise magnitudes
 else
     % Comprehensive debug run
     paramSpace.noiseMagnitudes = [0]; % No, low, medium, high
@@ -133,6 +152,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.filterTypes = [2, 6]; % Butterworth and SG-FS
+elseif debug == 4
+    % DB logic test
+    paramSpace.filterTypes = [2, 6]; % Both filters
 else
     % Comprehensive debug run
     paramSpace.filterTypes = [4]; %  SG
@@ -159,6 +181,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.regressTypes = [3, 5]; % fitlm and IRLS
+elseif debug == 4
+    % DB logic test
+    paramSpace.regressTypes = [3, 5]; % fitlm and IRLS
 else
     % regen shapes x fs
     paramSpace.regressTypes = 5; % fitlm, LMLS, IRLS
@@ -172,6 +197,9 @@ elseif debug == 1
     paramSpace.repeatTrial = 2;
 elseif debug == 3
     paramSpace.repeatTrial = 2;
+elseif debug == 4
+    % DB logic test: 3 trials gives 648 configs = 3× checkpoint interval
+    paramSpace.repeatTrial = 3;
 else % regen shapes * trials
     paramSpace.repeatTrial = 1;
 end
