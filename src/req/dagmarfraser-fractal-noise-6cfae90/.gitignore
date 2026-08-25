@@ -1,0 +1,38 @@
+# MATLAB (base: https://github.com/mathworks/gitignore/blob/main/Global/MATLAB.gitignore)
+
+# Derived content-obscured files
+*.p
+
+# Compiled MEX files
+*.mex*
+
+# Packaged app and toolbox files
+*.mlappinstall
+*.mltbx
+
+# Deployable archives
+*.ctf
+
+# Generated helpsearch folders
+helpsearch*/
+
+# Code generation folders
+slprj/
+sccprj/
+codegen/
+
+# Cache files
+*.slxc
+
+# Cloud based storage dotfile
+.MATLABDriveTag
+
+# --- fractalnoise-specific ---
+
+# macOS Finder metadata (caught sneaking into a .mltbx package once already --
+# see CHANGELOG.md packaging notes)
+.DS_Store
+
+# Scratch/dev workspace for .mlx source drafts and conversion round-trip
+# verification -- not part of the shipped toolbox
+.mlxscratch/

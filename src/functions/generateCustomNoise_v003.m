@@ -6,7 +6,7 @@ function noise = generateCustomNoise_v003(N, alpha, amplitude, fs)
 %
 % INPUTS:
 %   N         - Signal length (number of samples)
-%   alpha     - Spectral exponent (-2 to 5, where 0 = white noise)
+%   alpha     - Spectral exponent (-2 to 6, where 0 = white noise)
 %   amplitude - Target standard deviation of output signal (>=0, zero allowed)
 %   fs        - Sampling frequency in Hz
 %

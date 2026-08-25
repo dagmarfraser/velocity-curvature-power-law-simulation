@@ -1,4 +1,6 @@
-function [xt, yt, k_local, v_local] = generateSyntheticData_v011(shapeNum, canvas, fs, powerLaw, yGain, orbitCount, resample, regen, debug)
+function [xt, yt, k_local, v_local, shapeData] = generateSyntheticData_v011(shapeNum, canvas, fs, powerLaw, yGain, orbitCount, resample, regen, debug)
+% shapeData - struct with fields pathXYresample and K, returned so callers
+%             can pass it to baselineShapesFunc without a second file load.
 % generateSyntheticData_v011 - Generate synthetic trajectory data for power law analysis
 %
 % Extended from v010 to include better shape index validation and error handling
@@ -76,7 +78,10 @@ for shapesNum = 1:length(Frequency)
 end
 
 %% check if this already exists, otherwise regenerate
-saveName = ['baselineShp', num2str(shapeAngFreq),'_', num2str(sampleFrequency),'Hz.mat'];
+% Anchor saveName to this function's own directory so it resolves correctly
+% regardless of MATLAB's current working directory.
+thisDir  = fileparts(mfilename('fullpath'));
+saveName = fullfile(thisDir, ['baselineShp', num2str(shapeAngFreq), '_', num2str(sampleFrequency), 'Hz.mat']);
 if isfile(saveName) && ~regen
     if debug
         fprintf('Loading cached shape data from %s\n', saveName);
@@ -178,6 +183,10 @@ end
 % title('2 METHODS OF CALCULATING CARTESIAN CURVATURE COMPARED')
 
 k = K'; %we use the first method
+
+% Pack shape geometry for caller - avoids a second file load in baselineShapesFunc
+shapeData.pathXYresample = pathXYresample;
+shapeData.K             = K;
 
 %% k has a discontinuity error at the ends
 

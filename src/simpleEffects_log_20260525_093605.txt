@@ -1,0 +1,96 @@
+Diary: /rds/projects/f/fraserds-mpo-evaluation/2026_prereg/velocity-curvature-power-law-simulation-main/velocity-curvature-power-law-simulation-main/src/simpleEffects_log_20260525_093605.txt
+
+
+================================================================
+  EXTRACT SIMPLE EFFECTS v003  (prereg v101 S8.1)
+================================================================
+
+Loading: /rds/projects/f/fraserds-mpo-evaluation/2026_prereg/velocity-curvature-power-law-simulation-main/velocity-curvature-power-law-simulation-main/src/stage1_results_L9_Production DB (Level 9)_20260510_190748.mat
+  Tractability level : L9
+  Observations       : 17458535
+  R-squared          : 0.9912
+  Coefficients       : 192
+
+Applying predictor z-scoring from results.predictor_scaling:
+  betaGenerated       mu=0.3402  std=0.2072
+  VGF                 mu=184.3  std=73.37
+  noiseMagnitude      mu=4.122  std=5.549
+  noiseColor          mu=3  std=1.789
+  tableTrue z-scored. predict() will use scaled values.
+
+--- S2: Overall filterType x regressionType interaction ---
+  F(2,17458343) = 2.30, p = 1.01e-01, significant = NO
+
+--- S3: Six S8.1 simple effects (grand-mean marginalised) ---
+  Predicting 10000 observations x 6 pipelines...
+
+  Comparison                       delta        95% CI       d      Flag
+  --------------------------------------------------------------------------
+  BWFD-OLS vs SG-OLS             -0.0074  [-0.0075 -0.0072]  -0.06  UNEXPECTED
+  BWFD-LMLS vs SG-LMLS           -0.0065  [-0.0067 -0.0064]  -0.05  UNEXPECTED
+  BWFD-IRLS vs SG-IRLS           -0.0064  [-0.0066 -0.0063]  -0.05  UNEXPECTED
+  BWFD: OLS vs IRLS              -0.0240  [-0.0248 -0.0233]  -0.20  UNEXPECTED
+  SG: OLS vs IRLS                -0.0230  [-0.0238 -0.0223]  -0.18  UNEXPECTED
+  SG-OLS vs BWFD-IRLS            -0.0166  [-0.0174 -0.0158]  -0.13  NO_PRED
+
+--- S4: Noise-conditional simple effects ---
+
+  Centroid snap: empirical (alpha, sigma) will be z-scored before grid match.
+
+  Dataset         Comparison                       delta        95% CI       d   Flag
+  ------------------------------------------------------------------------------------
+  Zarandi  (alpha 2.53->2.60, sigma 4.44->4.00 mm, snap=0.445, n=26841)
+  Zarandi         BWFD-OLS vs SG-OLS             -0.0077  [-0.0077 -0.0076]  -0.06  UNEXPECTED
+  Zarandi         BWFD-LMLS vs SG-LMLS           -0.0065  [-0.0066 -0.0064]  -0.06  UNEXPECTED
+  Zarandi         BWFD-IRLS vs SG-IRLS           -0.0066  [-0.0067 -0.0065]  -0.06  UNEXPECTED
+  Zarandi         BWFD: OLS vs IRLS              -0.0093  [-0.0094 -0.0091]  -0.08  UNEXPECTED
+  Zarandi         SG: OLS vs IRLS                -0.0082  [-0.0084 -0.0080]  -0.07  UNEXPECTED
+  Zarandi         SG-OLS vs BWFD-IRLS            -0.0016  [-0.0019 -0.0014]  -0.01  NO_PRED
+
+  Cook CTRL  (alpha 3.65->3.60, sigma 6.47->6.00 mm, snap=0.473, n=26841)
+  Cook CTRL       BWFD-OLS vs SG-OLS             -0.0067  [-0.0068 -0.0067]  -0.06  UNEXPECTED
+  Cook CTRL       BWFD-LMLS vs SG-LMLS           -0.0056  [-0.0057 -0.0056]  -0.06  UNEXPECTED
+  Cook CTRL       BWFD-IRLS vs SG-IRLS           -0.0058  [-0.0058 -0.0057]  -0.06  UNEXPECTED
+  Cook CTRL       BWFD: OLS vs IRLS              -0.0070  [-0.0072 -0.0068]  -0.07  UNEXPECTED
+  Cook CTRL       SG: OLS vs IRLS                -0.0060  [-0.0062 -0.0058]  -0.06  UNEXPECTED
+  Cook CTRL       SG-OLS vs BWFD-IRLS            -0.0003  [-0.0005 -0.0000]  -0.00  NO_PRED
+
+  Hickman PLAC  (alpha 4.60->4.60, sigma 5.68->6.00 mm, snap=0.323, n=26842)
+  Hickman PLAC    BWFD-OLS vs SG-OLS             -0.0058  [-0.0059 -0.0057]  -0.06  UNEXPECTED
+  Hickman PLAC    BWFD-LMLS vs SG-LMLS           -0.0047  [-0.0048 -0.0046]  -0.05  UNEXPECTED
+  Hickman PLAC    BWFD-IRLS vs SG-IRLS           -0.0049  [-0.0049 -0.0048]  -0.05  UNEXPECTED
+  Hickman PLAC    BWFD: OLS vs IRLS              +0.0015  [+0.0013 +0.0017]  +0.02  EXPECTED
+  Hickman PLAC    SG: OLS vs IRLS                +0.0024  [+0.0022 +0.0026]  +0.02  EXPECTED
+  Hickman PLAC    SG-OLS vs BWFD-IRLS            +0.0073  [+0.0070 +0.0075]  +0.07  NO_PRED
+
+  Dagenais  (alpha 2.87->2.80, sigma 1.49->1.50 mm, snap=0.068, n=26838)
+  Dagenais        BWFD-OLS vs SG-OLS             -0.0074  [-0.0075 -0.0073]  -0.08  UNEXPECTED
+  Dagenais        BWFD-LMLS vs SG-LMLS           -0.0061  [-0.0062 -0.0061]  -0.07  UNEXPECTED
+  Dagenais        BWFD-IRLS vs SG-IRLS           -0.0063  [-0.0064 -0.0063]  -0.07  UNEXPECTED
+  Dagenais        BWFD: OLS vs IRLS              -0.0006  [-0.0007 -0.0004]  -0.01  UNEXPECTED
+  Dagenais        SG: OLS vs IRLS                +0.0005  [+0.0003 +0.0007]  +0.01  EXPECTED
+  Dagenais        SG-OLS vs BWFD-IRLS            +0.0068  [+0.0066 +0.0071]  +0.07  NO_PRED
+
+--- S5: Within-family pipeline rankings ---
+  BWFD_OLS      mean(deltaBeta) = +0.0566
+  BWFD_LMLS     mean(deltaBeta) = +0.1012
+  BWFD_IRLS     mean(deltaBeta) = +0.0806
+  SG_OLS        mean(deltaBeta) = +0.0639
+  SG_LMLS       mean(deltaBeta) = +0.1077
+  SG_IRLS       mean(deltaBeta) = +0.0870
+
+  BWFD ranking (smaller |deltaBeta| = less bias):
+    1. BWFD_OLS  (|delta|=0.0566)
+    2. BWFD_IRLS  (|delta|=0.0806)
+    3. BWFD_LMLS  (|delta|=0.1012)
+
+  SG ranking:
+    1. SG_OLS  (|delta|=0.0639)
+    2. SG_IRLS  (|delta|=0.0870)
+    3. SG_LMLS  (|delta|=0.1077)
+
+--- S6: Saving results ---
+  Mat:  /rds/projects/f/fraserds-mpo-evaluation/2026_prereg/velocity-curvature-power-law-simulation-main/velocity-curvature-power-law-simulation-main/src/simpleEffects_L9_20260525_100928.mat
+  Text: /rds/projects/f/fraserds-mpo-evaluation/2026_prereg/velocity-curvature-power-law-simulation-main/velocity-curvature-power-law-simulation-main/results/simpleEffects_L9_summary.txt
+
+extractSimpleEffects_v003 COMPLETE.

@@ -1,4 +1,4 @@
-function [dx, dy] = differentiateKinematicsEBR(x, y, filterType, filterParams, fs)
+function [dx, dy] = differentiateKinematicsEBR(x, y, filterType, filterParams, fs, t)
 %% demo code for Exp Brain Res review paper of Fraser et al., 2024
 % Created May 2024
 % Correspondence Dagmar Scott Fraser
@@ -14,6 +14,12 @@ function [dx, dy] = differentiateKinematicsEBR(x, y, filterType, filterParams, f
 %   5 Lacquaniti - "Time derivatives of the displacement data were calculated with the Lagrange  5 points formula after smoothing the raw data with a (double-sided exponential) numerical, low-pass filter (cut-off frequency 50 Hz)."
 %   6 Savitzky-Golay with fs-scaling (Fraser et al. temporal equivalence)
 %   7 Bandwidth-equivalent Savitzky-Golay (Schafer 2011 principled)
+%   8 Non-uniform Savitzky-Golay differentiation (Gorry 1991)
+%     Handles irregularly-sampled data via local polynomial WLS on actual
+%     timestamps. Requires t (timestamps) as 6th argument. Errors (caller
+%     discards trial) if any point has < 2*(order+1) temporal neighbours.
+%     Reduces exactly to standard SG when spacing is uniform.
+%     filterParams: [order, reference_framelen] as per Case 6.
 % filterParams - [filter order, Fc Low Pass Cutt off for Butterworth OR
 % width for S-G filter, zeroLag] 
 % - where zeroLag = 1 filtfilt, zeroLag = 0 just employ filter
@@ -32,6 +38,9 @@ function [dx, dy] = differentiateKinematicsEBR(x, y, filterType, filterParams, f
 dx = zeros(length(x),4);
 dy = zeros(length(y),4);
 dt = 1/fs;
+if nargin < 6
+    t = [];
+end
 
 switch filterType
 
@@ -309,6 +318,83 @@ switch filterType
             
             dx(:,p+1) = dxElement;
             dy(:,p+1) = dyElement;
+        end
+
+    case 8 % Non-uniform Savitzky-Golay differentiation (Gorry 1991)
+        % Handles irregularly-sampled data without resampling or anti-aliasing.
+        % Local polynomial WLS evaluated at actual timestamps.
+        %
+        % References:
+        %   Gorry, P.A. (1991). Anal. Chem. 63(5), 534-536. doi:10.1021/ac00005a031
+        %   Gorry, P.A. (1990). Anal. Chem. 62(6), 570-573.
+        %   Savitzky & Golay (1964). Anal. Chem. 36, 1627-1639.
+        %
+        % filterParams: [order, reference_framelen]
+        %   Temporal window = reference_framelen / 100 s  (Crenna reference, as Case 6)
+        % t: actual timestamps in seconds (6th argument, required)
+        %
+        % Errors if any evaluation point has fewer than 2*(order+1) neighbours
+        % within the temporal window — caller catches and discards the trial.
+        % When timestamps are perfectly uniform this reduces to standard SG.
+
+        order          = filterParams(1);
+        refFramelen    = filterParams(2);
+        temporalWidth  = refFramelen / 100;   % seconds (reference_fs = 100 Hz, as Case 6)
+        halfWidth      = temporalWidth / 2;
+        minNbr         = 2 * (order + 1);     % overdetermined floor: 2 sets of (order+1)
+
+        if isempty(t)
+            error('differentiateKinematicsEBR:MissingTimestamps', '%s', ...
+                  'Case 8 requires actual timestamps as 6th argument.');
+        end
+
+        tCol = t(:);
+        xCol = x(:);
+        yCol = y(:);
+        N    = length(xCol);
+
+        % Pre-check: trial genuinely too short to ever fill the window
+        if N < 2 * (order + 1)
+            error('differentiateKinematicsEBR:TrialTooShort', '%s', ...
+                  sprintf('Case 8: trial has %d samples (need %d for order %d). Discard trial.', ...
+                          N, 2*(order+1), order));
+        end
+
+        dx = zeros(N, 4);
+        dy = zeros(N, 4);
+
+        for i = 1:N
+            % --- collect temporal neighbours ----------------------------
+            idx  = abs(tCol - tCol(i)) <= halfWidth;
+            nNbr = sum(idx);
+
+            % At edge points the window is naturally asymmetric and nNbr
+            % drops below minNbr. Accept down to order+2 (minimum overdetermined).
+            % True short-trial failures are caught by the pre-check above.
+            if nNbr < order + 2
+                % Boundary artifact: set NaN, caller should apply edgeClip
+                dx(i, :) = NaN;
+                dy(i, :) = NaN;
+                continue
+            end
+
+            % --- local polynomial WLS -----------------------------------
+            % Shift timestamps so evaluation point is at origin.
+            % Vandermonde: V(j,k+1) = tau(j)^k   [nNbr x (order+1)]
+            tau = tCol(idx) - tCol(i);
+            V   = tau .^ (0:order);          % bsxfun-free: MATLAB broadcasts .^
+
+            % QR-based solve (stable; normal equations are ill-conditioned for
+            % Vandermonde matrices, especially at higher orders)
+            coeffsX = V \ xCol(idx);
+            coeffsY = V \ yCol(idx);
+
+            % p-th derivative at origin: f^(p)(0) = p! * a_p
+            % Columns: [position, velocity, acceleration, jerk]
+            for p = 0:min(3, order)
+                dx(i, p+1) = factorial(p) * coeffsX(p+1);
+                dy(i, p+1) = factorial(p) * coeffsY(p+1);
+            end
         end
 
 end

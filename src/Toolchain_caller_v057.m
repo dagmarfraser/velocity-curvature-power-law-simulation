@@ -30,18 +30,21 @@ try
     rng('default');
 
     % ===== CONFIGURATION TOGGLES =====
-    % Debug level: 0=full run, 1=minimal debug, 2=rebuild shapes, 3=parallel debug
-    debug = 2;
+    % Debug level: 0=full run, 1=minimal debug, 2=rebuild shapes,
+    %              3=parallel debug, 4=DB logic test (648 configs, no toolchain)
+    debug = 4;
     
     % PARAMETER GENERATION METHOD TOGGLE
     % true = Use new fast streaming batch method (recommended)
     % false = Use original individual INSERT method (slow but verified)
     useFastBatch = true;
     
-    % Add required paths
-    addpath(genpath('functions'));
-    addpath(genpath('req'));
-    addpath(genpath('utils'));
+    % Add required paths (anchored to caller file location, HPC-safe)
+    callerDir = fileparts(mfilename('fullpath'));  % .../src
+    addpath(genpath(fullfile(callerDir, 'functions')));
+    addpath(genpath(fullfile(callerDir, 'req')));
+    addpath(genpath(fullfile(callerDir, 'utils')));
+    addpath(callerDir);
     commandwindow;
 
     % Setup paths and database connection
@@ -55,6 +58,7 @@ try
 
     % Create configuration settings
     cfg = createConfigSettings();
+    cfg.dbTestMode = (debug == 4);  % bypass Toolchain_func; exercise DB logic only
 
     % Setup checkpoints and initialize job with SELECTED METHOD
     [configIDs, startIdx, totalConfigs, generationTime] = ...
@@ -102,8 +106,10 @@ end
 
 function [conn, dbFile, masterDir, jobIdentifier, isHPC] = setupEnvironment(debug)
 % Setup database and environment variables
-localDir = pwd;
-masterDir = localDir(1:end-3);
+% Use mfilename to anchor masterDir regardless of pwd (HPC-safe)
+thisFile = mfilename('fullpath');          % .../PowerLawSimulationPreReg/src/Toolchain_caller_v057
+srcDir   = fileparts(thisFile);            % .../PowerLawSimulationPreReg/src
+masterDir = fileparts(srcDir);             % .../PowerLawSimulationPreReg
 
 if debug
     dbFile = fullfile(masterDir, 'results', 'powerlaw_debug_v057.db');
@@ -155,8 +161,8 @@ try
         rowsToShow = min(5, height(incompleteJobs));
         for i = 1:rowsToShow
             jobID = incompleteJobs.job_id{i};
-            lastIdx = incompleteJobs.last_completed_idx(i);
-            totalIdx = incompleteJobs.total_configs(i);
+            lastIdx = double(incompleteJobs.last_completed_idx(i));
+            totalIdx = double(incompleteJobs.total_configs(i));
             progress = (lastIdx / totalIdx) * 100;
             
             fprintf('[%d] %s - Progress: %d/%d (%.1f%%)\n', ...
@@ -200,7 +206,7 @@ end
 
 function [parallelSettings, debugCores] = determineParallelSettings(debug, isHPC)
 % Determine parallel settings but DON'T create pool yet (v056 fix)
-debugCores = (debug > 0 && debug < 3);
+debugCores = (debug > 0 && debug < 3) || (debug == 4);
 
 if ~debugCores
     if isHPC
@@ -226,6 +232,8 @@ else
         disp('MINIMAL DEBUG RUN - No parallel computing');
     elseif debug == 2
         disp('COMPREHENSIVE DEBUG RUN - No parallel computing');
+    elseif debug == 4
+        disp('DB LOGIC TEST - No parallel computing (648 configs, synthetic results)');
     end
 end
 end
@@ -295,16 +303,18 @@ else
         end
         
     catch ME
-        if useFastBatch
+        isMissingFunction = strcmp(ME.identifier, 'MATLAB:UndefinedFunction') || ...
+            contains(ME.message, 'Undefined function');
+        if useFastBatch && isMissingFunction
             warning('MATLAB:PowerLaw:BatchMethodFailed', ...
-                'Fast batch method failed (%s), falling back to original method...', ME.message);
+                'Batch function not found, falling back to original method...');
             generationTimer = tic;
             configIDs = generateParameterConfigsDB_fixed(conn, paramSpace);
             generationTime = toc(generationTimer);
             totalConfigs = length(configIDs);
             fprintf('Fallback to original method completed in %s\n', formatTime(generationTime));
         else
-            rethrow(ME);
+            rethrow(ME); % All other errors are fatal
         end
     end
 
@@ -486,19 +496,33 @@ for i = 1:length(chunkIDs)
     cfg.regressType = double(params.regress_type);
     cfg.TrialNum = double(params.trial_num);
 
-    try
-        [DATA, beta, VGF, duration, errMadirolas, errCurvature] = ...
-            Toolchain_func_v032(localIdx, totalConfigs, cfg);
-
-        results = struct('beta', beta, 'vgf', VGF, 'duration', duration, ...
-            'err_madirolas', errMadirolas, 'err_curvature', errCurvature, ...
-            'success', DATA);
-
+    if isfield(cfg, 'dbTestMode') && cfg.dbTestMode
+        % DB logic test: skip toolchain, store synthetic result to exercise
+        % batch insert, checkpoint writes, and job completion logic only
+        results = struct( ...
+            'beta',            params.generated_beta + 0.001 * randn(), ...
+            'vgf',             params.vgf_value, ...
+            'duration',        10.0, ...
+            'err_madirolas',   0.021, ...
+            'err_curvature',   0.001, ...
+            'success',         true, ...
+            'processing_time', 0.001);
         storeResultDB(conn, configID, workerID, results);
-    catch ME
-        warning('MATLAB:PowerLaw:ConfigError', 'Error processing config %d: %s', configID, ME.message);
-        errorResult = struct('error_message', ME.message, 'success', false);
-        storeResultDB(conn, configID, workerID, errorResult);
+    else
+        try
+            [DATA, beta, VGF, duration, errMadirolas, errCurvature] = ...
+                Toolchain_func_v032(localIdx, totalConfigs, cfg);
+
+            results = struct('beta', beta, 'vgf', VGF, 'duration', duration, ...
+                'err_madirolas', errMadirolas, 'err_curvature', errCurvature, ...
+                'success', DATA);
+
+            storeResultDB(conn, configID, workerID, results);
+        catch ME
+            warning('MATLAB:PowerLaw:ConfigError', 'Error processing config %d: %s', configID, ME.message);
+            errorResult = struct('error_message', ME.message, 'success', false);
+            storeResultDB(conn, configID, workerID, errorResult);
+        end
     end
 
     if mod(i, checkpointInterval) == 0 || i == length(chunkIDs)
@@ -590,7 +614,7 @@ parfor i = 1:length(subChunkIDs)
         end
 
         taskStartTime = tic;
-        localCfg = createWorkerConfig(params, cfg.versionTc);
+        localCfg = createWorkerConfig(params, cfg);
 
         [DATA, beta, VGF, duration, errMadirolas, errCurvature] = ...
             Toolchain_func_v032(localIdx, totalConfigs, localCfg);
@@ -638,7 +662,7 @@ parfor i = 1:length(subChunkIDs)
         close(localConn);
 
         taskStartTime = tic;
-        localCfg = createWorkerConfig(params, cfg.versionTc);
+        localCfg = createWorkerConfig(params, cfg);
 
         [DATA, beta, VGF, duration, errMadirolas, errCurvature] = ...
             Toolchain_func_v032(localIdx, totalConfigs, localCfg);
@@ -667,35 +691,23 @@ end
 resultBatch = resultBatch(~cellfun(@isempty, resultBatch));
 end
 
-function localCfg = createWorkerConfig(params, versionTc)
-% Create configuration for a worker with pixelScale correctly included
-localCfg = struct();
-localCfg.versionTc = versionTc;
-localCfg.ShapeChoice = double(params.shape_type);
-localCfg.fs = double(params.sampling_rate);
-localCfg.powerLaw = double(params.generated_beta);
-localCfg.yGain = double(params.vgf_value);
-localCfg.noiseType = double(params.noise_type);
-localCfg.filterType = double(params.filter_type);
+function localCfg = createWorkerConfig(params, cfg)
+% Create per-trial config by inheriting static settings from cfg,
+% then overlaying the trial-specific parameters from params.
+% createConfigSettings() is the single source of truth for all static fields.
+localCfg = cfg;
+
+% Per-trial parameters from the parameter space database
+localCfg.ShapeChoice  = double(params.shape_type);
+localCfg.fs           = double(params.sampling_rate);
+localCfg.powerLaw     = double(params.generated_beta);
+localCfg.yGain        = double(params.vgf_value);
+localCfg.noiseType    = double(params.noise_type);
+localCfg.filterType   = double(params.filter_type);
 localCfg.filterParams = params.filter_params;
-localCfg.regressType = double(params.regress_type);
-localCfg.TrialNum = double(params.trial_num);
-
-localCfg.pixelScale = 480 / 100;
-localCfg.noiseStdDev = double(params.noise_magnitude) * localCfg.pixelScale;
-
-localCfg.orbitCount = 6;
-localCfg.saveAll = 0;
-localCfg.display = [0 0 0];
-localCfg.canvas = [1920; 1080];
-localCfg.edgeClip = 50;
-localCfg.curvatureChoice = 1;
-localCfg.limitBreak = 0;
-localCfg.displayGraphs = 0;
-localCfg.MaticSpline = 0;
-localCfg.resample = 20;
-localCfg.variantPowerLaw = 1;
-localCfg.rethrowErrors = false;
+localCfg.regressType  = double(params.regress_type);
+localCfg.TrialNum     = double(params.trial_num);
+localCfg.noiseStdDev  = double(params.noise_magnitude) * cfg.pixelScale;
 end
 
 function storeResultsBatch(conn, resultBatch)

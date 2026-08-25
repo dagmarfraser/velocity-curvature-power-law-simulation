@@ -1,0 +1,51 @@
+# SPDX-FileCopyrightText: 2021 Daniel Laidig <laidig@control.tu-berlin.de>
+#
+# SPDX-License-Identifier: MIT
+
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build_sdist:
+    name: Build sdist
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        name: Install Python
+        with:
+            python-version: '3.10'
+
+      - name: Build sdist
+        run: python setup.py sdist
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: sdist
+          path: ./dist/*.tar.gz
+
+
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-14]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.23.4
+        env:
+          CIBW_SKIP: "pp* *-musllinux_*"
+          CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
+          CIBW_MANYLINUX_X86_64_IMAGE: "quay.io/pypa/manylinux_2_28_x86_64"
+          CIBW_MANYLINUX_I686_IMAGE: "quay.io/pypa/manylinux_2_28_i686"
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl

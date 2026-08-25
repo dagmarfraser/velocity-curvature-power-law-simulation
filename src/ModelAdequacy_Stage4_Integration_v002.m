@@ -671,8 +671,10 @@ end
 
 try
     fprintf(fid, '%s', html_content);
-finally
     fclose(fid);
+catch ME_write
+    fclose(fid);
+    rethrow(ME_write);
 end
 
 fprintf('✓ Final framework report generated: %s\n', final_filename);

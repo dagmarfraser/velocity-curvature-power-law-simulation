@@ -572,25 +572,26 @@ try
     % **FIXED v002**: All variable references now use camelCase
     
     % Extract key variables for regional modeling
-    y = region_data.deltaBeta;                  % FIXED: camelCase
-    X_basic = [ones(n_obs, 1), region_data.betaGenerated]; % FIXED: camelCase
+    % Cast to double: DB-loaded tables may have non-double numeric columns
+    y = double(region_data.deltaBeta);                  % FIXED: camelCase + double cast
+    X_basic = [ones(n_obs, 1), double(region_data.betaGenerated)]; % FIXED: camelCase + double cast
     
     % Add key interaction terms based on parameter space
     if ismember('VGF', region_data.Properties.VariableNames)
-        X_basic = [X_basic, region_data.VGF, region_data.betaGenerated .* region_data.VGF];
+        X_basic = [X_basic, double(region_data.VGF), double(region_data.betaGenerated) .* double(region_data.VGF)];
     end
     
     if ismember('noiseMagnitude', region_data.Properties.VariableNames) % FIXED: camelCase
-        X_basic = [X_basic, region_data.noiseMagnitude]; % FIXED: camelCase
+        X_basic = [X_basic, double(region_data.noiseMagnitude)]; % FIXED: camelCase + double cast
     end
     
     if ismember('noiseColor', region_data.Properties.VariableNames) % FIXED: camelCase
-        X_basic = [X_basic, region_data.noiseColor]; % FIXED: camelCase
+        X_basic = [X_basic, double(region_data.noiseColor)]; % FIXED: camelCase + double cast
     end
     
     % Add sampling rate effects if available
     if ismember('samplingRate', region_data.Properties.VariableNames) % FIXED: camelCase
-        X_basic = [X_basic, region_data.samplingRate]; % FIXED: camelCase
+        X_basic = [X_basic, double(region_data.samplingRate)]; % FIXED: camelCase + double cast
     end
     
     % Fit regional model using robust estimation

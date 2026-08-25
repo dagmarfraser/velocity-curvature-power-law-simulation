@@ -1,0 +1,18 @@
+{
+    "_schemaVersion": "1.0.0",
+
+    "linCCC":
+    {
+        "inputs":
+        [
+            {"name":"y1", "kind":"required", "type":["numeric", "column"]},
+            {"name":"y2", "kind":"required", "type":["numeric", "column"]},
+            {"name":"alpha", "kind":"ordered", "type":["numeric", "scalar"]},
+            {"name":"CompareR", "kind":"namevalue", "type":["logical", "scalar"]}
+        ],
+        "outputs":
+        [
+            {"name":"cccResults", "type":["struct", "scalar"]}
+        ]
+    }
+}

@@ -5,7 +5,9 @@ function paramSpace = defineParameterSpace(debug)
 % velocity-curvature power law calculations based on the debug level.
 %
 % Input:
-%   debug - Debug level (0: maximal run, 1: minimal debug, 2: rebuild shapes, 3: parallel debug)
+%   debug - Debug level (0: maximal run, 1: minimal debug, 2: rebuild shapes,
+%           3: parallel debug, 4: DB logic test - 648 configs, no toolchain computation,
+%           5: prereg deviation - expanded noise grid, powerlaw_multiverse_v058.db)
 
 % delete all the shapes x sampling freq files before running debug 2
 %
@@ -30,6 +32,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run (medium size for testing parallel performance)
     paramSpace.samplingRates = [120, 240]; % Hz
+elseif debug == 4
+    % DB logic test: enough configs to span 3 checkpoint intervals (648 total)
+    paramSpace.samplingRates = [60, 120]; % Hz
 else % redo the shapes at at frequencies
     % Comprehensive debug run
     paramSpace.samplingRates = [60, 120, 240]; % Hz
@@ -49,6 +54,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.shapes = [6]; % Ellipse (φ = 2) and φ = 3
+elseif debug == 4
+    % DB logic test
+    paramSpace.shapes = [6]; % Ellipse only
 else
     % shapes rebuild
     paramSpace.shapes = [6]; % Ellipse (φ = 2) and φ = 3
@@ -65,6 +73,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.generatedBetas = [0, 1/3, 2/3]; % Full range but fewer points
+elseif debug == 4
+    % DB logic test
+    paramSpace.generatedBetas = [0, 1/3, 2/3]; % 3 values
 else
     % Comprehensive debug run
     paramSpace.generatedBetas = [1/3]; % Classic and two deviations
@@ -82,6 +93,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.vgfValues = [exp(5.0), exp(5.2), exp(5.5)]; % Three different tempos
+elseif debug == 4
+    % DB logic test
+    paramSpace.vgfValues = [exp(4.8), exp(5.2), exp(5.6)]; % 3 VGF values
 else
     % Comprehensive debug run
     paramSpace.vgfValues = [exp(5.2)]; % ~1Hz and ~0.8Hz tempos
@@ -99,6 +113,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.noiseTypes = [0, 2]; % White and brown/red
+elseif debug == 4
+    % DB logic test
+    paramSpace.noiseTypes = [0, 2]; % White and brown/red
 else
     % Comprehensive debug run
     paramSpace.noiseTypes = [1]; % White, pink, brown/red
@@ -115,6 +132,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.noiseMagnitudes = [0, 1, 2]; % No, medium, high
+elseif debug == 4
+    % DB logic test
+    paramSpace.noiseMagnitudes = [0, 0.5, 1]; % 3 noise magnitudes
 else
     % Comprehensive debug run
     paramSpace.noiseMagnitudes = [0]; % No, low, medium, high
@@ -133,6 +153,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.filterTypes = [2, 6]; % Butterworth and SG-FS
+elseif debug == 4
+    % DB logic test
+    paramSpace.filterTypes = [2, 6]; % Both filters
 else
     % Comprehensive debug run
     paramSpace.filterTypes = [4]; %  SG
@@ -159,6 +182,9 @@ elseif debug == 1
 elseif debug == 3
     % Parallel debug run
     paramSpace.regressTypes = [3, 5]; % fitlm and IRLS
+elseif debug == 4
+    % DB logic test
+    paramSpace.regressTypes = [3, 5]; % fitlm and IRLS
 else
     % regen shapes x fs
     paramSpace.regressTypes = 5; % fitlm, LMLS, IRLS
@@ -172,8 +198,30 @@ elseif debug == 1
     paramSpace.repeatTrial = 2;
 elseif debug == 3
     paramSpace.repeatTrial = 2;
+elseif debug == 4
+    % DB logic test: 3 trials gives 648 configs = 3× checkpoint interval
+    paramSpace.repeatTrial = 3;
 else % regen shapes * trials
     paramSpace.repeatTrial = 1;
+end
+
+% ===== PRE-REGISTRATION DEVIATION: EXPANDED NOISE GRID (debug=5) =====
+% All parameters identical to debug=0 (frozen prereg v101) except noise axes.
+% Rationale: empirical alpha 4.1-4.6 (Cook/Hickman) exceeds simulation ceiling
+% alpha=3.0; template-bias-corrected sigma ~14 mm exceeds ceiling 10 mm.
+% Invertibility analysis (Finding #18) shows 100% NoRise at empirical coords
+% when snapped to alpha=3.0 -- expanded grid resolves the snapping bias.
+% DB: powerlaw_debug_v058.db  (~18.0M configurations, 1.2x v057).
+if debug == 5
+    paramSpace.samplingRates   = [60, 120, 240];          % unchanged
+    paramSpace.shapes          = [6];                     % unchanged
+    paramSpace.generatedBetas  = 0:(2/3)/20:0.7;          % 22 values (step=1/30; 0.7=21/30 exact; extends past 2/3 to clip descending beta_rec~1/3 branch)
+    paramSpace.vgfValues       = exp(4.5:0.1:5.8);        % 14 values, unchanged
+    paramSpace.noiseTypes      = 0:0.2:6;                 % 31 values (coarser 0.2 step; covers empirical alpha 4.1-4.6)
+    paramSpace.noiseMagnitudes = [0:0.025:0.1, 0.25:0.25:2.25, 4, 6, 8, 10, 12, 15, 20]; % 21 values (+12,15,20 mm)
+    paramSpace.filterTypes     = [2, 6];                  % unchanged
+    paramSpace.regressTypes    = 3:5;                     % unchanged
+    paramSpace.repeatTrial     = 5;                       % unchanged
 end
 
 % Generate trials array
@@ -188,7 +236,7 @@ paramSpace.totalConfigCount = length(paramSpace.samplingRates) * ...
                              length(paramSpace.noiseMagnitudes) * ...
                              length(paramSpace.filterTypes) * ...
                              length(paramSpace.regressTypes) * ...
-                             paramSpace.repeatTrial
+                             paramSpace.repeatTrial;
 
 % Attach debug level to the parameter space for reference
 paramSpace.debugLevel = debug;

@@ -1,0 +1,24 @@
+{
+    "_schemaVersion": "1.0.0",
+
+    "mantelTest":
+    {
+        "inputs":
+        [
+            {"name":"D1", "kind":"required", "type":["numeric", "2d"]},
+            {"name":"D2", "kind":"required", "type":["numeric", "2d"]},
+            {"name":"InputType", "kind":"namevalue", "type":[["choices={'distance','observations'}"]]},
+            {"name":"Distance", "kind":"namevalue", "type":[["choices={'euclidean'}"]]},
+            {"name":"Method", "kind":"namevalue", "type":[["choices={'pearson','spearman'}"]]},
+            {"name":"NPerm", "kind":"namevalue", "type":["numeric", "scalar"]},
+            {"name":"Exact", "kind":"namevalue", "type":[["choices={'auto','on','off'}"]]},
+            {"name":"CompareR", "kind":"namevalue", "type":["logical", "scalar"]}
+        ],
+        "outputs":
+        [
+            {"name":"mantelR", "type":["numeric", "scalar"]},
+            {"name":"pValue", "type":["numeric", "scalar"]},
+            {"name":"info", "type":["struct", "scalar"]}
+        ]
+    }
+}

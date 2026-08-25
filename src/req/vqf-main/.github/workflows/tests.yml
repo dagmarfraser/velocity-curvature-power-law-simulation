@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: 2021 Daniel Laidig <laidig@control.tu-berlin.de>
+#
+# SPDX-License-Identifier: MIT
+
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    name: Run tests
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+            python-version: ${{ matrix.python-version }}
+
+      - name: Install Octave
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq octave
+
+      - name: Install package
+        run: pip install ".[dev]"
+
+      - name: Run reuse lint
+        run: reuse lint
+        if: matrix.python-version == '3.10'
+
+      - name: Run flake8
+        run: flake8
+        if: matrix.python-version == '3.10'
+
+      - name: Run pytest
+        run: pytest --nomatlab

@@ -6,11 +6,11 @@ This repository contains the pre-registration, simulation code, and analysis pip
 
 ## What's in this release (and what isn't)
 
-This is the pre-registration release (tagged `v1.0.0-prereg`). The simulation and model adequacy code are complete and ready to run. Empirical validation tooling (Stage 5) will follow after the simulation itself is done.
+This is the pre-registration release (tagged `v1.0.2-prereg`). The simulation and model adequacy code are complete and ready to run. Empirical validation tooling (Stage 5) will follow after the simulation itself is done.
 
 **Present:**
 
-- Pre-registration document (`prereg_v101.docx`)
+- Pre-registration document (`prereg_v101.docx` - and registered here https://doi.org/10.17605/OSF.IO/CKR8H)
 - Phase 1 simulation pipeline (`Toolchain_caller_v057.m`, `Toolchain_func_v032.m`)
 - Phase 2 model adequacy framework, all four stages
 - Core analytical functions: kinematic derivation, regression, curvature, synthetic data generation
@@ -67,7 +67,7 @@ Synthetic elliptical trajectories with known β and VGF are contaminated with co
 - Sampling rates: 60, 120, 240 Hz
 - Generative β: 0 to 2/3 (21 levels)
 - Velocity gain factor: 14 levels
-- Noise colour α: 0 to 3.0 (31 levels, white through black)
+- Noise colour α: 0 to 3.0 (31 levels, white through black; extended to 6.0 in v058, validated by `validateXuNoise_v005`)
 - Noise magnitude σ: 0 to 10 mm (18 levels)
 - Repetitions: 5 per condition
 
@@ -95,11 +95,11 @@ cd src
 validate_prereg_readiness
 
 % Quick validation run with ersatz data (random response values, no simulation)
-ModelAdequacy_Master_v002(2, 5, false)
+ModelAdequacy_Master_v004(2, 5, false)
 
 % Production
 Toolchain_caller_v057;                  % Phase 1
-ModelAdequacy_Master_v002(9, 5, true)   % Phase 2, full parameter space
+ModelAdequacy_Master_v004(9, 5, true)   % Phase 2, full parameter space
 ```
 
 `Toolchain_caller_v057` accepts debug levels 0-3. Level 0 is full production; higher levels reduce the parameter space for development and testing.
@@ -127,7 +127,7 @@ MATLAB has no built-in CCC. The custom implementation (`src/functions/linCCC_v00
 result = linCCC_v001(y1, y2);
 ```
 
-McBride (2005) thresholds: > 0.90 excellent, 0.70-0.90 good, 0.50-0.70 moderate, < 0.50 poor.
+McBride (2005) thresholds: > 0.99 almost perfect, 0.95-0.99 substantial, 0.90-0.95 moderate, < 0.90 poor.
 
 ## Empirical validation databases
 
@@ -163,7 +163,7 @@ run('src/test_xiao_crossvalidate_v002.m')  % requires R on PATH
 
 ```
 ├── README.md
-├── prereg_v100.docx
+├── prereg_v101.docx
 ├── CITATION.cff
 ├── LICENSE
 ├── src/
@@ -177,6 +177,8 @@ run('src/test_xiao_crossvalidate_v002.m')  % requires R on PATH
 │   │   ├── curvatureKinematicEBR.m
 │   │   ├── generateSyntheticData_v011.m
 │   │   ├── linCCC_v001.m
+│   │   ├── iraAlphaSigma_v001.m       IRASA spectral exponent (homebrew, pmtm-based)
+│   │   ├── generateCustomNoise_v003.m Coloured noise via XuNoise (validated alpha=0-6)
 │   │   ├── defineParameterSpace.m
 │   │   └── ...
 │   ├── req/
@@ -188,16 +190,14 @@ run('src/test_xiao_crossvalidate_v002.m')  % requires R on PATH
 │   ├── test_R_CCC.m                      Validates linCCC_v001 against R's DescTools::CCC
 │   └── validate_prereg_readiness.m       Pre-submission verification checks
 ├── data/                             See data/README.md for sources
-├── docs/                             CCC validation demos
+├── docs/
+│   ├── CCC_demo_correlation_vs_agreement.m   Why CCC is required over Pearson r (6 scenarios)
+│   ├── CCC_demo_constellation.m              CCC constellation use case (pairwise pipeline diffs)
+│   ├── CCC_demo_interrater_reliability.png   Output from a deleted third demo script (source lost; PNG retained)
+│   ├── README_NoiseCharacterisation.md       Noise methodology narrative (pmtm → IRASA → homebrew)
+│   └── BlueBEAR_RDS_mounting.md              HPC filesystem mount instructions
 ├── results/                          Populated after simulation
 ├── figures/
 └── reports/                          Model adequacy HTML reports (generated)
 ```
 
-## References
-
-- Cook, J. L., Fraser, D. S., Hickman, L. J., Brewer, R., & Huh, D. (2026). Autistic kinematics diverge from the power laws that typically govern movement.
-- Fraser, D. S., Di Luca, M., & Cook, J. L. (2025). Biological kinematics: analysis protocol determines the velocity-curvature power law. *Behavior Research Methods*.
-- Lacquaniti, F., Terzuolo, C., & Viviani, P. (1983). The law relating the kinematic and figural aspects of drawing movements. *Acta Psychologica*, 54, 115-130.
-- McBride, G. B. (2005). A proposal for strength-of-agreement criteria for Lin's concordance correlation coefficient. *NIWA Client Report*.
-- Xiao, X., White, E. P., Hooten, M. B., & Durham, S. L. (2011). On the use of log-transformation vs. nonlinear regression for analyzing biological power laws. *Ecology*, 92(10), 1887-1894.

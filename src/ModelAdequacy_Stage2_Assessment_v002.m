@@ -31,7 +31,7 @@ function ModelAdequacy_Stage2_Assessment_v002(stage1_file)
 % **PIPELINE INTEGRATION**:
 %   Input:  stage1_results_*.mat (ModelAdequacy_Stage1_KitchenSink_v001.m)
 %   Output: stage2_adequacy_*.mat (adequacy assessment for Stage 3)
-%   Next:   ModelAdequacy_Stage3_Conditional_v001.m (if conditional analysis required)
+%   Next:   ModelAdequacy_Stage3_Conditional_v004.m (if conditional analysis required)
 %
 % USAGE:
 %   ModelAdequacy_Stage2_Assessment_v002()                                  % Use latest Stage 1 results

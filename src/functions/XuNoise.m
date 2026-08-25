@@ -12,7 +12,7 @@ function noise = XuNoise(N, alpha, amplitude, fs, phi)
 %
 % Inputs:
 %   N         - Length of generated noise sequence (integer)
-%   alpha     - Spectral exponent (full alpha value, will be converted to d=alpha/2)
+%   alpha     - Spectral exponent (full alpha value, will be converted to d=alpha/2; range [-2, 6])
 %   amplitude - Target standard deviation of output signal (default: 1.0)
 %   fs        - Sampling frequency in Hz (default: 1.0, used for validation)
 %   phi       - GGM break frequency parameter (default: 0.99, CRITICAL for red leakage mitigation)
@@ -75,8 +75,8 @@ if ~isscalar(N) || N <= 0 || mod(N, 1) ~= 0
     error('XuNoise:InvalidN', 'N must be a positive integer');
 end
 
-if ~isscalar(alpha) || ~isnumeric(alpha) || alpha < -2 || alpha > 5
-    error('XuNoise:InvalidAlpha', 'Alpha parameter must be numeric in range [-2, 5]');
+if ~isscalar(alpha) || ~isnumeric(alpha) || alpha < -2 || alpha > 6
+    error('XuNoise:InvalidAlpha', '%s', 'Alpha parameter must be numeric in range [-2, 6]');
 end
 
 if ~isscalar(amplitude) || ~isnumeric(amplitude) || amplitude < 0
