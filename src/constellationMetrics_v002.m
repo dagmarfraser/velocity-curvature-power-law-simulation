@@ -42,13 +42,30 @@ function results = constellationMetrics_v002(opts)
 %   results.byNoiseModel.<model>.perDataset  -- per-dataset structs (as v001)
 %   results.comparisonTable                  -- wide table, all models side by side
 %
-% Reads (no re-simulation): loopClosureResults_<tag>_all_<model>_v007.mat.
+% Reads (no re-simulation): loopClosureResults_<tag>_all_<model>_v007.mat,
+% EXCEPT Fraser, which reads the _v008.mat runner suffix (Finding #137 --
+% a newer runner version, not a different tier; matches constellationMetrics_v004.m's
+% own special-case).
 % Dhieb is auto-included once its full shaped_xu mat exists (skipped if absent).
 %
-% Fraser, D.S. (2026)  v002
+% CORRECTION, 2026-08-26: default Datasets swapped Pilot -> Fraser. This
+% script's own checked-in output (constellationMetrics_v002.mat) had drifted
+% out of sync with its own already-published downstream dependents
+% (blandAltman_v001.mat 07-Aug-2026 and the SEM-agreement/pattern-preservation/
+% TDI-CP outputs built from it) -- those were generated from a Fraser-inclusive
+% run of this file that was later overwritten by an archival Pilot-only
+% snapshot (29-Jun-2026), reportedly during a decision to preserve v002 as
+% "historical three-model rows" for a DIFFERENT citation (the xu/shaped_xu/
+% bootstrap noise-model-selection narrative, which genuinely is Pilot-era and
+% is not affected by this fix). Pilot itself is fully retired ("persona non
+% grata", see claude.md) -- this correction resolves the drift by making
+% Fraser the live default, matching v004. Pre-correction Pilot-based output
+% preserved verbatim at constellationMetrics_v002_PILOT_ARCHIVE_20260629.mat.
+%
+% Fraser, D.S. (2026)  v002 (corrected 2026-08-26)
 
     arguments
-        opts.Datasets (1,:) string = ["Pilot","Zarandi","Cook CTRL","Cook ASD", ...
+        opts.Datasets (1,:) string = ["Fraser","Zarandi","Cook CTRL","Cook ASD", ...
                                       "Hickman PLAC","Hickman HALO","Dhieb"]
         opts.NoiseModels (1,:) string = ["xu","shaped_xu","bootstrap"]
         opts.NPerm (1,1) double {mustBeInteger, mustBePositive} = 999
@@ -91,8 +108,16 @@ function results = constellationMetrics_v002(opts)
         for d = 1:numel(opts.Datasets)
             ds  = opts.Datasets(d);
             tag = replace(ds, " ", "_");
-            f   = fullfile(srcDir, sprintf( ...
-                "loopClosureResults_%s_all_%s_v007.mat", tag, model));
+            % Fraser uses the v008 runner suffix, not v007 (Finding #137) --
+            % a newer runner version, not a different tier. Matches
+            % constellationMetrics_v004.m's own special-case.
+            if tag == "Fraser"
+                f = fullfile(srcDir, sprintf( ...
+                    "loopClosureResults_%s_all_%s_v008.mat", tag, model));
+            else
+                f = fullfile(srcDir, sprintf( ...
+                    "loopClosureResults_%s_all_%s_v007.mat", tag, model));
+            end
             if ~isfile(f)
                 warning("constellationMetrics_v002:missingMat", "%s", ...
                     "Skipping " + ds + " [" + model + "] -- mat absent.");
