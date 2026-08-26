@@ -190,6 +190,14 @@ src/*
 !src/perCoordinateSEM_v001.mat
 !src/perCoordinateSEM_v2_001.mat
 
+# -- data: inverse beta_gen* lookup (Finding, 2026-08-26 exhaustiveness sweep) --
+# inverseBetaGenLookup_v003.m (already shipped, allowlisted below) explicitly
+# requires predictionLookup_v2_002.mat, not the older v2_001 -- this was
+# missing from the allowlist entirely until this pass, meaning a fresh clone
+# would have hit this script's own FAIL LOUD error on the missing file. Small
+# (4.68 MB), no eData involvement needed.
+!src/predictionLookup_v2_002.mat
+
 # -- data: constellation / Supplement A --
 !src/constellationMetrics_v004.mat
 !src/constellationMetrics_v002.mat
