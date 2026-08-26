@@ -17,15 +17,26 @@
 % Console: attractor location table (pipeline x alpha) at sigma = 10 mm,
 %          plus focused summary at alpha = 2 (red noise, empirically typical).
 %
-% Requires: perCoordinateSEM_v001.mat (computePerCoordinateSEM_v001.m)
+% CORRECTION 2026-08-26: was reading perCoordinateSEM_v001.mat, an older,
+% smaller-grid artefact (4 alpha values 0-3, sigma capped at 10mm). The
+% current v058 grid (perCoordinateSEM_v2_001.mat) has 31 alpha values (0-6)
+% and sigma to 20mm -- the 10mm ceiling this script's own SIGMA_MAX assumed
+% was correct for the OLD file, but v058 was specifically expanded because
+% real datasets (Cook/Hickman) have empirical sigma ~14mm, above that old
+% ceiling. This script was therefore blind to the exact noise regime that
+% matters most for real data. VGF axis confirmed identical between the two
+% files before swapping (14 values, max abs diff 0), so REF_VGF_I=8 still
+% resolves to the same VGF=181.3.
+%
+% Requires: perCoordinateSEM_v2_001.mat (current v058-era grid)
 % Fraser, D.S. (2026)
 
 %% Configuration
 REF_FS     = 120;    % Hz  — fs effect negligible; consistent with other scripts
 REF_VGF_I  = 8;     % index into sorted VGF vector — exp(5.2) ≈ 181.3 (~1 Hz)
-SIGMA_MAX  = 10.0;  % mm  — grid maximum; used for attractor location estimate
+SIGMA_MAX  = 20.0;  % mm  — v058 grid maximum (extended from the pre-registered 10mm ceiling); used for attractor location estimate
 ALPHA_SHOW = [0, 1, 2, 3];           % cardinal noise colours for Fig 1 (one fig each)
-SIGMA_SHOW = [0.5, 2.0, 6.0, 10.0]; % mm — noise levels overlaid per Fig 1 panel
+SIGMA_SHOW = [0.5, 2.0, 6.0, 15.0, 20.0]; % mm — noise levels overlaid per Fig 1 panel; 15mm is the nearest actual grid point to Cook/Hickman's own empirical sigma (~14mm; grid has 12 and 15, not 14), 20mm is the new grid max
 
 %% Pipeline aesthetics (consistent across project)
 pipeNames  = ["BWFD-OLS","BWFD-LMLS","BWFD-IRLS","SG-OLS","SG-LMLS","SG-IRLS"];
@@ -34,8 +45,8 @@ pipeColors = [0.85 0.33 0.10; 0.93 0.69 0.13; 0.49 0.18 0.56;
 nPipes     = numel(pipeNames);
 
 %% Load
-fprintf('Loading perCoordinateSEM_v001.mat ...\n');
-load('perCoordinateSEM_v001.mat', 'coordTable');
+fprintf('Loading perCoordinateSEM_v2_001.mat ...\n');
+load('perCoordinateSEM_v2_001.mat', 'coordTable');
 T = coordTable;
 fprintf('  %d coordinates loaded\n', height(T));
 
@@ -85,7 +96,8 @@ alphaLabels = ["\alpha=0 (white)", "\alpha=1 (pink)", ...
 sigmaColors = [0.40 0.75 0.40;   % sigma = 0.5 mm
                0.10 0.55 0.15;   % sigma = 2 mm
                0.00 0.25 0.05;   % sigma = 6 mm
-               0.10 0.10 0.10];  % sigma = 10 mm
+               0.35 0.15 0.05;   % sigma = 15 mm (nearest grid point to Cook/Hickman empirical ~14mm)
+               0.10 0.10 0.10];  % sigma = 20 mm (new grid max)
 
 for ai = 1:numel(ALPHA_SHOW)
     alph = ALPHA_SHOW(ai);
@@ -247,8 +259,18 @@ fprintf('    Low spread = flat curve = genuine attractor.\n\n');
 
 % Header row
 fprintf('%-14s', 'Pipeline');
-alphaColHeaders = 0:0.5:3;  % print subset for readability
-colIdx = arrayfun(@(a) find(allAlpha == a, 1), alphaColHeaders);
+% CORRECTION 2026-08-26: alphaColHeaders was a hardcoded 0:0.5:3, a leftover
+% from the pre-v058 grid (alpha step 0.1). v058's own step is 0.2
+% (defineParameterSpace.m, debug==5), so half of 0:0.5:3's values (0.5, 1.5,
+% 2.5) no longer land on an actual grid point -- this crashed the now-removed
+% colIdx computation (dead code, never used downstream) and would have
+% printed silent NaN columns in the table below even without the crash.
+% Derived directly from allAlpha (already loaded from T) rather than a
+% hardcoded literal, so it can never float-point-mismatch against T.alpha's
+% own stored values -- same reasoning plotBetaRecovery_v005.m's own
+% snap-to-grid section already applies elsewhere in this project.
+alphaLE3 = allAlpha(allAlpha <= 3 + 1e-9);
+alphaColHeaders = alphaLE3(1:2:end);  % every other grid point, 0-3, for readability
 for a = alphaColHeaders, fprintf(' a=%3.1f', a); end
 fprintf('\n%s\n', repmat('-', 1, 14 + 7*numel(alphaColHeaders)));
 
