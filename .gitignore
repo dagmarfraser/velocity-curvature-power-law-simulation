@@ -181,6 +181,7 @@ src/*
 !src/generateLoopClosureNoise_v002.m
 !src/buildConstellationRDM_v002.m
 !src/runConstellationRSA_HPC_v007.m
+!src/runConstellationRSA_HPC_v008.m
 
 # -- data: LMM / SEM / attractor --
 !src/L9_coefficients_v004.csv
