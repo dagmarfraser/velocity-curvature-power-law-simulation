@@ -205,6 +205,7 @@ src/*
 # both p=0.0001) before being added here.
 !src/constellationMetrics_v003.mat
 !src/constellationRSA_HPC_v007.mat
+!src/constellationRSA_HPC_v008.mat
 
 # -- data: noise characterisation, all 7 canonical datasets --
 !src/noiseCharacterisation_fraser.mat
