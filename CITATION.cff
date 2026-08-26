@@ -13,12 +13,12 @@ authors:
     given-names: "Jennifer Louise"
     orcid: "https://orcid.org/0000-0003-4916-8667"
     affiliation: "University of Birmingham"
-title: "Velocity-Curvature Power Law Protocol Simulation"
+title: "Velocity-curvature power law: protocol characterisation and identifiability framework"
 version: 1.0.0
 identifiers:
   - type: doi
-    value: "10.5281/zenodo.17047450"
-date-released: "2026-02-05"
+    value: "10.5281/zenodo.18723236"
+date-released: "2026-02-21"
 url: "https://github.com/dagmarfraser/velocity-curvature-power-law-simulation"
 repository-code: "https://github.com/dagmarfraser/velocity-curvature-power-law-simulation"
 license: MIT
@@ -30,11 +30,21 @@ keywords:
   - matlab
   - autism
   - movement-analysis
+  - parkinsons-disease
+  - identifiability
 abstract: >-
-  Systematic characterisation framework for velocity-curvature power law 
-  analytical protocols. Evaluates six pipeline combinations across 14.7 million
-  parameter configurations to determine measurement precision boundaries for
-  detecting small effect sizes (|Δβ| ≈ 0.03) in clinical populations.
+  Systematic characterisation framework for velocity-curvature power law
+  analytical protocols, evaluating six pipeline combinations ({Butterworth+
+  finite-differences, Savitzky-Golay} x {OLS, Levenberg-Marquardt, IRLS})
+  across 18,045,720 parameter configurations. Finds that whether a
+  protocol's mapping from the true generative exponent to the recovered
+  value is even invertible is a separate question from its measurement
+  precision: across seven empirical datasets, only 4 of 42 dataset-pipeline
+  combinations pass a local-monotonicity invertibility gate cleanly, 6 are
+  conditional, and 32 fail outright. Grid inversion (the pre-registered
+  design) still yields a pooled estimate of the true generator (beta_gen*
+  approximately 0.30); pointwise, noise-calibrated inversion reports
+  non-recoverability honestly where grid inversion is not safe to trust.
 references:
   - type: article
     authors:
