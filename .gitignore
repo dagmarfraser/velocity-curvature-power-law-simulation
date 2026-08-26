@@ -179,6 +179,8 @@ src/*
 !src/ModelAdequacy_Stage4_Integration_v003.m
 !src/extractSimpleEffects_v003.m
 !src/generateLoopClosureNoise_v002.m
+!src/buildConstellationRDM_v002.m
+!src/runConstellationRSA_HPC_v007.m
 
 # -- data: LMM / SEM / attractor --
 !src/L9_coefficients_v004.csv
@@ -190,6 +192,17 @@ src/*
 !src/constellationMetrics_v004.mat
 !src/constellationMetrics_v002.mat
 !src/blandAltman_v001.mat
+
+# -- data: RSA/Mantel (Finding #138) -- constellationMetrics_v003.mat is a
+# third, distinct variant from the v002/v004 pair above: it's what
+# runConstellationRSA_HPC_v007.m itself reads, added 2026-08-26 during Part G
+# clean-clone testing (previously missing from this allowlist entirely).
+# constellationRSA_HPC_v007.mat is the actual citable RSA/Mantel result --
+# was RDS-only until this same pass, copied down and confirmed to reproduce
+# Finding #138's numbers exactly (Fraser mantelR=+0.3316, pooled +0.2165,
+# both p=0.0001) before being added here.
+!src/constellationMetrics_v003.mat
+!src/constellationRSA_HPC_v007.mat
 
 # -- data: noise characterisation, all 7 canonical datasets --
 !src/noiseCharacterisation_fraser.mat
