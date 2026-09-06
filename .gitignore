@@ -178,6 +178,13 @@ src/*
 !src/ModelAdequacy_Stage3_Conditional_v005.m
 !src/ModelAdequacy_Stage4_Integration_v003.m
 !src/extractSimpleEffects_v003.m
+
+# -- audit scripts, Session 103 (2026-09-02): give a traceable, re-runnable
+# producer to numbers previously established in console sessions. Not part
+# of the original Part E citation trace -- added here, not there, on that
+# basis. See docs/SESSION_LOG.md Session 103.
+!src/auditNoiseCoordinates_v001.m
+!src/auditSEMLookupAndQuadrants_v001.m
 !src/generateLoopClosureNoise_v002.m
 !src/buildConstellationRDM_v002.m
 !src/runConstellationRSA_HPC_v007.m
