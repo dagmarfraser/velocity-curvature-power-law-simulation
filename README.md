@@ -83,7 +83,7 @@ Downstream of this (all regenerate cleanly from what's checked in):
 - SEM agreement (`analyzeSEMAgreement_v002.m`)
 - Coverage probability / TDI (`analyzeTDICoverage_v001.m`)
 - Pooling (`loopClosureVarDecomp_v010.m`/`_v011.m`) — the headline β_gen* pool
-- Structural (RSA/Mantel) validation (`buildConstellationRDM_v002.m`, `runConstellationRSA_HPC_v007.m`) — whether the *pattern* of pipeline behaviour across noise regimes matches between simulation and real data, not just individual values
+- Structural (RSA/Mantel) validation (`buildConstellationRDM_v002.m`, `runConstellationRSA_HPC_v008.m`) — whether the *pattern* of pipeline behaviour across noise regimes matches between simulation and real data, not just individual values (pooled mantelR=+0.1938, n=3656, Pilot-excluded; Finding #179)
 
 ### Large files not yet in this repository
 
@@ -218,7 +218,7 @@ run('src/test_xiao_crossvalidate_v002.m')  % requires R on PATH
 │   ├── constellationMetrics_v004.m            Pointwise: constellation validation
 │   ├── analyze{BlandAltman,PatternPreservation,SEMAgreement,TDICoverage}_*.m
 │   ├── buildConstellationRDM_v002.m           Pointwise: structural (RSA) validation
-│   ├── runConstellationRSA_HPC_v007.m
+│   ├── runConstellationRSA_HPC_v008.m
 │   ├── loopClosureVarDecomp_v0{10,11}.m       Pointwise: headline pooling
 │   ├── functions/
 │   │   ├── differentiateKinematicsEBR.m
