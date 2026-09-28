@@ -129,19 +129,28 @@ end
 
 %% -- Helpers
 function logFile = locateLog()
+% Auto-selects the most recently dated simpleEffects_log_*.txt in this
+% directory (Fixed 2026-09-12: previously hardcoded to the stale
+% 2026-05-25 log, which silently regenerated Fig 3 from mislabelled
+% v003-centroid data even after the centroid bug itself was fixed.
+% Falls back to the results/ summary only if no dated log is present.)
     base = fileparts(mfilename('fullpath'));
-    candidates = { ...
-        fullfile(base, 'simpleEffects_log_20260525_093605.txt'), ...
-        fullfile(base, '..', 'results', 'simpleEffects_L9_summary.txt') };
-    for k = 1:numel(candidates)
-        if isfile(candidates{k})
-            logFile = candidates{k};
-            return;
-        end
+    d = dir(fullfile(base, 'simpleEffects_log_*.txt'));
+    if ~isempty(d)
+        [~, ord] = sort([d.datenum], 'descend');
+        logFile = fullfile(base, d(ord(1)).name);
+        fprintf('locateLog: using most recent log: %s\n', d(ord(1)).name);
+        return;
+    end
+    fallback = fullfile(base, '..', 'results', 'simpleEffects_L9_summary.txt');
+    if isfile(fallback)
+        logFile = fallback;
+        return;
     end
     error('plotSimpleEffects_v001:missingLog', '%s', ...
         ['Could not locate simpleEffects log. ' ...
-         'Expected in src/ or ../results/. Copy from RDS if needed.']);
+         'Expected simpleEffects_log_*.txt in src/ or ../results/summary. ' ...
+         'Copy from RDS if needed.']);
 end
 
 function [contrasts, delta, lo, hi, d, flag] = parseS3(logFile)

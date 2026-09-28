@@ -143,6 +143,8 @@ src/*
 
 # -- scripts --
 !src/plotPaperRoadmapSchematic_v001.m
+!src/plotPaperRoadmapSchematic_v002.m
+!src/plotPaperRoadmapSchematic_v003.m
 !src/plotBetaRecovery_v005.m
 !src/attractorLocation_v001.m
 !src/plotLMMCoefficients_v002.m
@@ -191,11 +193,118 @@ src/*
 !src/runConstellationRSA_HPC_v008.m
 !src/runMe_ConstellationRSA_v008.m
 
+# -- VGF secondary analysis, Session 107 (2026-09-13): D7/Finding #194.
+# Missing from this allowlist entirely until caught by Dagmar asking
+# directly whether these were even tracked -- same class of gap as the
+# Session 105 .gitignore note above, just the new-file version of it
+# rather than the renamed-file version. `checkVGFSEMCentroid_v001.m` is
+# superseded same-session by `_v002.m` (kept per this project's own
+# convention of not deleting superseded files) but is itself never cited
+# by the manuscript, so it is NOT allowlisted here -- only the two
+# versions the manuscript's Part 1 Results (c) actually cites are.
+!src/computePerCoordinateSEM_VGF_v001.m
+!src/checkVGFSEMCentroid_v002.m
+!src/checkVGFSEMCentroid_v003.m
+!src/checkVGFInvertibility_v001.m
+!src/runVGFSEMCentroidPipeline_v001.m
+
+# -- gated re-pool, Session 108 (2026-09-13): Findings #195/#196. Surgical
+# fork of loopClosureVarDecomp_v011.m (already allowlisted above); adds
+# DataSource={legacy,gatedV012,confirmatory} and fixes the ciLo/ciHi
+# ascending-vs-descending convention bug Finding #196 found. Allowlisted
+# from creation, not caught later by Dagmar asking -- the gap the last two
+# dated blocks in this file were each about.
+!src/loopClosureVarDecomp_v012_gated.m
+!src/loopClosureVarDecomp_v012_gated_all6_legacy.mat
+!src/loopClosureVarDecomp_v012_gated_all6_gatedV012.mat
+!src/loopClosureVarDecomp_v012_gated_all6_confirmatory.mat
+!src/reportLoopClosureVarDecompNvsN_v003.m
+
+# -- Sessions 112-114 (2026-09-18/19): producers and outputs the manuscript now
+# cites (Findings #213, #215, #216; D19; Fig 9). All small, all
+# desktop-regenerable from tracked corpora, tracked for traceability.
+!src/tabulateBetaGenStarRunDrift_v001.m
+!src/betaGenStarRunDrift_v001.mat
+!src/betaGenStarRunDrift_v001.txt
+!src/checkPracticalIdentifiability_v003.m
+!src/practicalIdentifiability_v003.mat
+!src/practicalIdentifiability_v003.txt
+!src/compareCookCtrlAsd_v002.m
+!src/compareCookCtrlAsd_v002.mat
+!src/compareCookCtrlAsd_v002_confirmatory.mat
+!src/compareHickmanPlacHalo_v002.m
+!src/compareHickmanPlacHalo_v002.mat
+!src/compareHickmanPlacHalo_v002_confirmatory.mat
+!src/loopClosureVarDecomp_v012_gated_all6_v015.mat
+!src/compare42CellVerdict_v002.m
+!src/plotVerdictHeatmapNvsN_v002.m
+
+# -- Session 116 (2026-09-19): D10's VGF LMM CI half-width traced (Finding
+# #217). v001 is the dead end (matfile single-level-indexing assumption,
+# combined validation condition masked which one failed); not cited, not
+# allowlisted here, same precedent as checkVGFSEMCentroid_v001.m above.
+# v002's two outputs are HPC-produced (842s full-struct load of the
+# 15.9GB RDS-only vgfLMM_v001_latest.mat on BlueBEAR) and kept per the
+# Session 110/111 "anything that needed HPC to produce is kept" rule.
+!src/checkD10VGFCoeffCI_v002.m
+!src/checkD10VGFCoeffCI_v002_rawCoeffs.mat
+!src/checkD10VGFCoeffCI_v002_results.mat
+
+# -- Session 118 (2026-09-20): Tier 3 build and the noise-to-repetitions
+# floor, both cited by the manuscript itself (Part 2 Method's new bullet,
+# the General Discussion design-dependence bullet, and both scripts' own
+# Working Notes follow-ups). Built and validated in mainline src/ per
+# Dagmar's own "do it in the mainline first" call, not yet ported to
+# tool/ (see this session's own four-item porting list, SESSION_LOG.md).
+# Allowlisted from creation, not caught later by Dagmar asking -- the
+# exact gap the Session 105/107/116 notes above are each about.
+!src/runToolLoopClosure_v002.m
+!src/tier3DesignPrecision_v001.m
+!src/checkTier3AgainstMainProject_v001.m
+!src/exploreTier3PipelineChoice_v001.m
+!src/computeInversionNoiseRepetitionFloor_v001.m
+
+# -- Session 119 (2026-09-21): SIMEX diagnostic build (Findings #218/#219),
+# cited directly in PaperDraft_IdentifiabilitySkeleton_v002.md §2.5.
+# simexBetaRecovery_v001.m lives in src/functions/, already covered by the
+# wholesale !src/functions/ unignore above -- no separate entry needed.
+# runSimexBetaCorpus_v001.m sits at src/ root and needs its own entry like
+# every other root-level script. Allowlisted from creation, matching
+# Session 118's own precedent, not left for a later session to catch.
+!src/runSimexBetaCorpus_v001.m
+
+# -- Session 121 (2026-09-22): generative-model check (Findings #222/#223,
+# D20), cited in PaperDraft_IdentifiabilitySkeleton_v002.md Part 3.
+# v002 only; v001 (identical total statistic, no f0/band split) stays
+# excluded as superseded, same precedent as checkVGFSEMCentroid_v001.m.
+# Result mats in src/results/ are NOT allowlisted: desktop-regenerable
+# (~4 min on the M5), per the 2026-09-18 data-deposit retention rule.
+# Runner v003 + analyse function supersede runner v002 (analysis moved
+# out so it re-runs from a saved table without re-running the corpus).
+!src/checkAdditiveVsRetimed_v002.m
+!src/analyseCheckAdditiveVsRetimed_v001.m
+!src/runCheckAdditiveVsRetimedFullCorpus_v003.m
+
 # -- data: LMM / SEM / attractor --
 !src/L9_coefficients_v004.csv
-!src/simpleEffects_log_20260525_093605.txt
+# 2026-09-12: swapped from simpleEffects_log_20260525_093605.txt, whose
+# centroids were stale v003 (Session 103's fix never reached the RDS
+# copy of extractSimpleEffects_v003.m, so this exact log kept getting
+# re-derived from wrong data until the 2026-09-12 re-run). plotSimpleEffects_v001.m's
+# locateLog() no longer hardcodes a filename (auto-selects the newest
+# simpleEffects_log_*.txt in src/), but a fresh clone only ever has
+# whatever this allowlist tracks, so the correct log still needs naming
+# here explicitly. If simpleEffects_log_20260525_093605.txt is already
+# committed from a prior push, it needs `git rm --cached
+# src/simpleEffects_log_20260525_093605.txt` alongside this change, or a
+# fresh clone will have both and locateLog()'s own newest-wins logic
+# will still pick correctly -- but the stale one is dead weight either way.
+!src/simpleEffects_log_20260912_094422.txt
 !src/perCoordinateSEM_v001.mat
 !src/perCoordinateSEM_v2_001.mat
+# VGF-outcome sibling of perCoordinateSEM_v2_001.mat above, Session 107 --
+# see the VGF secondary-analysis script block above for why it was missing.
+!src/perCoordinateSEM_VGF_v001.mat
 
 # -- data: inverse beta_gen* lookup (Finding, 2026-08-26 exhaustiveness sweep) --
 # inverseBetaGenLookup_v003.m (already shipped, allowlisted below) explicitly
@@ -246,6 +355,165 @@ src/*
 !src/loopClosureResults_Hickman_PLAC_all_shaped_xu_v007.mat
 !src/loopClosureResults_Hickman_HALO_all_shaped_xu_v007.mat
 !src/loopClosureResults_Fraser_all_shaped_xu_v008.mat
+
+# -- HPC-produced artefacts and Session 110/111 producers, 2026-09-18.
+# Rule (Dagmar, 2026-09-18): anything that needed HPC to produce is kept,
+# because reviewers cannot regenerate it lightly. The eight largest HPC
+# artefacts go to Zenodo (docs/eDataManifest_v003.md); everything below is
+# under GitHub's 100 MB hard limit and lives beside the v007/v008/v012
+# corpora the scripts already expect in src/. Three files exceed GitHub's
+# 50 MB soft warning (Fraser v013 73.5 MB, Fraser v015 81.5 MB,
+# monotonicSegments_v2_002 52.7 MB); precedent: perCoordinateSEM_v2_001.mat
+# (82 MB) is already tracked.
+#
+# N_REPS=200 confirmatory corpora (BlueBEAR). Feed D11's pooled beta_gen*
+# and the N=20-vs-N=200 heatmap. Version map: loopClosureVarDecomp_v012_gated.m
+# L333-335 (Cook_ASD v014; others v013). Dhieb v014 feeds the 7-dataset
+# heatmap. Not run-reproducible at a fixed seed (Finding #204).
+!src/runLoopClosureFftnoise_v013.m
+!src/runLoopClosureFftnoise_v014.m
+!src/loopClosureResults_Zarandi_all_shaped_xu_v013.mat
+!src/loopClosureResults_Cook_CTRL_all_shaped_xu_v013.mat
+!src/loopClosureResults_Cook_ASD_all_shaped_xu_v014.mat
+!src/loopClosureResults_Dhieb_all_shaped_xu_v014.mat
+!src/loopClosureResults_Hickman_PLAC_all_shaped_xu_v013.mat
+!src/loopClosureResults_Hickman_HALO_all_shaped_xu_v013.mat
+!src/loopClosureResults_Fraser_all_shaped_xu_v013.mat
+!src/loopClosureVarDecomp_v011_all6_N20.mat
+!src/loopClosureVarDecomp_v011_all6_N200.mat
+#
+# v015 corpora (BlueBEAR, ~586 core-hours per runLoopClosureAll_v015.m's
+# own benchmark). Feed Findings #205/#206 (D16). runLoopClosureFftnoise_v015.m
+# is GENERATED from v013 by makeRunLoopClosureV015_v001.m, so the generator
+# is tracked rather than the generated file.
+!src/makeRunLoopClosureV015_v001.m
+!src/runLoopClosureAll_v015.m
+!src/loopClosureResults_Zarandi_all_shaped_xu_v015.mat
+!src/loopClosureResults_Cook_CTRL_all_shaped_xu_v015.mat
+!src/loopClosureResults_Cook_ASD_all_shaped_xu_v015.mat
+!src/loopClosureResults_Dhieb_all_shaped_xu_v015.mat
+!src/loopClosureResults_Hickman_PLAC_all_shaped_xu_v015.mat
+!src/loopClosureResults_Hickman_HALO_all_shaped_xu_v015.mat
+!src/loopClosureResults_Fraser_all_shaped_xu_v015.mat
+#
+# Findings #205-209, cited in the manuscript via D16-D18 and Part 2/General
+# Discussion. Producers plus the inputs each one loads.
+!src/loopClosureLOPOOutOfSample_v001.m
+!src/loopClosureLOPOOutOfSample_v001.mat
+!src/zarandiLMLSFoldDiagnostic_v001.m
+!src/datasetOperatingPointCoverage_v001.m
+!src/vgfMatchedSEMSensitivity_v001.m
+!src/analyticOracleCheck_v001.m
+!src/measureRegressionSaturation_v005.m
+!src/measureRegressionSaturation_v005.mat
+!src/saturationSweepEngine_v001.m
+!src/buildMonotonicSegments_v2_002.m
+!src/monotonicSegments_v2_002.mat
+!src/constellationFraser_v001.mat
+!src/constellationZarandi_v001.mat
+!src/constellationCook_v001.mat
+!src/constellationCookASD_v001.mat
+!src/constellationDhieb_v001.mat
+!src/constellationHickmanPLAC_v001.mat
+!src/constellationHickmanHALO_v001.mat
+#
+# Other manuscript-cited outputs missing until this pass.
+!src/simpleEffects_L9_20260912_101823.mat
+# LMM_coefficients_top_L9_20260525_093556.txt is cited at manuscript L473
+# and L764 but is NOT in the local tree (checked 2026-09-18). Presumed
+# RDS-only. This line tracks nothing until the file is copied into src/.
+!src/LMM_coefficients_top_L9_20260525_093556.txt
+
+# -- tempo-fold chain and thread-level checks, Session 123 (2026-09-25/26):
+# Findings #224-#232. Run order and inputs/outputs: docs/README_TempoFold_v001.md
+# (steps 1-12). Every input is already tracked (functions/ folder; the seven v015
+# corpora; perCoordinateSEM_v2_001, measureRegressionSaturation_v005,
+# loopClosureLOPOOutOfSample_v001). Outputs go to results/, which is excluded
+# wholesale (eData/Zenodo route). See docs/SESSION_LOG.md Session 123.
+!src/tempoFoldEngine_v001.m
+!src/checkGridTempoAtFold_v004.m
+!src/checkFoldOnsetVsSigma_v003.m
+!src/runTempoFoldSweep_v001.m
+!src/runTempoFoldSweepC_v001.m
+!src/runTempoFoldSweepE_v001.m
+!src/analyseTempoFoldSweep_v001.m
+!src/analyseTempoFoldSweepE_v002.m
+!src/analyseTrialTempoWindow_v001.m
+!src/checkSEMTempoMatched_v001.m
+!src/checkOracleV2_v001.m
+!src/checkLOPODomain_v001.m
+!src/auditLimitBreak_v001.m
+!src/checkFilterCutoffCollapse_v001.m
+!src/extractGainTarget_v002.m
+!src/analyseTempoDecomposition_v002.m
+
+# -- v003 build, grid units, the L9 model object, P-1/P-2, Session 124
+# (2026-09-27/28): Findings #236-#239 and the #44 re-derivation. Scripts run from
+# src/ and resolve paths from their own location. gridShapeGeometry_v00x live in src/
+# root (not functions/). Inputs: perCoordinateSEM_v2_001, the v007/v015 corpora and
+# functions/ (all tracked); Toolchain_caller_v058.m (the grid harness, never tracked
+# before; gridShapeGeometry parses its pixelScale, L213); results/gridTempoAtFold_v004
+# and results/L9ModelInspect_v002 are git-excluded (results/*), see claude.md open
+# items (#237 follow-ups). inspectL9Model_v001 / extractL9ModelSlim_v001 are the
+# BlueBEAR route to the fitted lme. Not allowlisted: checkLMMTempoConfound_v001
+# (superseded; its failed gate against the CSV is recorded in #237).
+# See docs/SESSION_LOG.md Session 124.
+!src/Toolchain_caller_v058.m
+!src/gridShapeGeometry_v001.m
+!src/gridShapeGeometry_v002.m
+!src/checkGridShapeUnits_v001.m
+!src/checkLMMTempoConfound_v002.m
+!src/inspectL9Model_v001.m
+!src/extractL9ModelSlim_v001.m
+!src/inspectL9Model_v002.m
+!src/compareL9CSVToModel_v001.m
+!src/extractSigmaAlphaRatio_v005.m
+!src/plotLMMCoefficients_v003.m
+!src/attractorLocation_v002.m
+!src/safeZoneTrialMaps_v001.m
+!src/safeZoneTrialMaps_v002.m
+
+# -- A16 and A20, Session 125 (2026-09-28): Findings #240 and #241. Run from src/.
+# checkEmpiricalTempoVsGridVGF_v001 reads noiseCharacterisation_* and functions/
+# baselineShp6_120Hz.mat (tracked) and self-checks against
+# results/datasetOperatingPointCoverage_v001.mat (git-excluded, results/*).
+# extractSimpleEffects_v004 is v003 plus prereg §8.1 Comparison 2 (SG-LMLS vs
+# SG-IRLS); BlueBEAR only (needs the RDS-only stage1 L9 mat); outputs are
+# simpleEffects_v004_* so Fig 3 keeps reading the v003 log.
+# See docs/SESSION_LOG.md Session 125.
+!src/checkEmpiricalTempoVsGridVGF_v001.m
+!src/extractSimpleEffects_v004.m
+!src/plotPaperRoadmapSchematic_v004.m
+# Finding #242 (Session 125, later): calibrated generative-model check and Fig 0 v005.
+# positiveControlAdditiveVsRetimed_v00x write results/positiveControl* (git-excluded).
+!src/checkAdditiveVsRetimed_v003.m
+!src/positiveControlAdditiveVsRetimed_v001.m
+!src/positiveControlAdditiveVsRetimed_v002.m
+!src/plotPaperRoadmapSchematic_v005.m
+# -- Session 126 (2026-09-28): Finding #243, the #242 VERIFY flags. Run from src/.
+# checkLOPODomain_v002 reads src/loopClosureLOPOOutOfSample_v001.mat (Zenodo deposit;
+# git-excluded by the src/*.mat rule at the end of this file);
+# checkGainTargetLMMDomain_v001 reads results/gainTarget_v002.mat (git-excluded,
+# produced by extractGainTarget_v002, tracked). Outputs go to results/ (git-excluded).
+!src/checkLOPODomain_v002.m
+!src/checkGainTargetLMMDomain_v001.m
+# -- Session 126 provenance audit (2026-09-28): every filename named in the v003
+# skeleton was located and passed through `git check-ignore`. These scripts produce
+# results v003 cites (or wrote the figures it cites) but were ignored by src/*.
+# Rule going forward: any script v003 cites, plus the src-root scripts it calls.
+# Scanned before allowlisting: no keys/tokens, no hard-coded /Users/ paths.
+# Toolchain_func_v032 is the grid engine called by Toolchain_caller_v058 (allowlisted
+# Session 124); D15 cites its L339.
+!src/Toolchain_func_v032.m
+!src/runSimexBetaCorpus_v002.m
+!src/crossReferenceSimexMonotonicity_v001.m
+!src/queryMonotonicSlopeAtEmpirical_v003.m
+!src/checkAlphaBetaCouplingV004_v001.m
+!src/checkFraserSEMCentroid_v001.m
+!src/knockDownFlags_v001.m
+!src/validateIrasaRecovery_v001.m
+!src/plotBetaGenStarAllDatasets_v003.m
+!src/plotBetaGenStarAllPipelines_v003.m
 
 # ============================================
 # Python (if any helper scripts)
@@ -336,3 +604,13 @@ figures/*
 # ============================================
 src/fourier/*.wav
 src/fourier/*.mp4
+
+# ============================================
+# Data outputs in src/ go to Zenodo, not git (Session 126, 2026-09-28)
+# ============================================
+# Last in the file on purpose: it overrides earlier per-file allowlists for
+# .mat files at src/ root (e.g. loopClosureResults_*, constellation*,
+# loopClosureLOPOOutOfSample_v001.mat). Files already tracked stay tracked;
+# this only keeps new ones out. src/functions/*.mat (e.g. baselineShp6_120Hz.mat,
+# needed to run the code) is one level down and unaffected.
+src/*.mat

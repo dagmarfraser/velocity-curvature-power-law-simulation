@@ -1,3 +1,15 @@
+% extractSimpleEffects_v004.m
+% v004 vs v003 (2026-09-28, Session 125, coherence-pass A20): adds prereg v101
+% §8.1 Critical Comparison 2, SG-LMLS vs SG-IRLS ("does IRLS provide meaningful
+% advantage over LMLS when kinematic derivation is already optimal?"), which v003
+% never computed (v002/v003 drafts answered it with SG: OLS vs IRLS). Appended as a
+% seventh row of the contrasts table, so it runs grand-mean (S3) and at every
+% centroid (S4) on the SAME Monte Carlo sample; no new random draws, so rows 1-6
+% must reproduce v003 exactly (self-check after S3, Fail Loud). Outputs renamed
+% simpleEffects_v004_* so plotSimpleEffects_v001's locateLog() (simpleEffects_log_*)
+% keeps reading the v003 log and v003's summary text is not overwritten.
+%
+% (v003 header follows)
 % extractSimpleEffects_v003.m
 % Six planned simple effects from the Stage 1 kitchen-sink LMM (prereg v101 §8.1).
 %
@@ -35,7 +47,7 @@ rng(42, 'twister');   % reproducible Monte Carlo sampling
 
 % Open diary log immediately so all console output is captured
 srcDir_  = fileparts(mfilename('fullpath'));
-diaryFile = fullfile(srcDir_, sprintf('simpleEffects_log_%s.txt', ...
+diaryFile = fullfile(srcDir_, sprintf('simpleEffects_v004_log_%s.txt', ...
     datestr(now, 'yyyymmdd_HHMMSS'))); %#ok<DATST>
 diary(diaryFile);
 diary on
@@ -206,7 +218,8 @@ contrasts = { ...
     'BWFD-IRLS vs SG-IRLS',  'BWFD_IRLS', 'SG_IRLS',  +1, 'SG >= BWFD with IRLS (small expected advantage)'; ...
     'BWFD: OLS vs IRLS',     'BWFD_OLS',  'BWFD_IRLS', +1, 'IRLS rescues BWFD artefacts (expected large)'; ...
     'SG: OLS vs IRLS',       'SG_OLS',    'SG_IRLS',   +1, 'IRLS advantage smaller with SG (expected small)'; ...
-    'SG-OLS vs BWFD-IRLS',   'SG_OLS',    'BWFD_IRLS', 0,  'Compensation test: kinematic vs regression dominance' ...
+    'SG-OLS vs BWFD-IRLS',   'SG_OLS',    'BWFD_IRLS', 0,  'Compensation test: kinematic vs regression dominance'; ...
+    'SG-LMLS vs SG-IRLS',    'SG_LMLS',   'SG_IRLS',   +1, 'Critical Comparison 2: IRLS >= LMLS once derivation is clean' ...
     };
 
 nContrasts = size(contrasts, 1);
@@ -245,6 +258,17 @@ for k = 1:nContrasts
         label, delta, ciLo, ciHi, dCoh, flag);
 end
 fprintf('\n');
+
+% v004 SELF-CHECK: registered contrasts 1-6 must reproduce the v003 log
+% (simpleEffects_log_20260912_094422.txt, S3) to 4 dp. Same sample, same model.
+V003_DELTAS = [-0.0074 -0.0065 -0.0064 -0.0240 -0.0230 -0.0166];
+for k = 1:numel(V003_DELTAS)
+    if abs(round(grandSE(k).delta, 4) - V003_DELTAS(k)) > 1e-9
+        error('extractSimpleEffects:v003Mismatch', '%s', sprintf('%s: delta %+.4f does not reproduce the v003 log (%+.4f)', ...
+            grandSE(k).label, grandSE(k).delta, V003_DELTAS(k)));
+    end
+end
+fprintf('  v004 self-check passed: contrasts 1-6 reproduce the v003 log to 4 dp.\n\n');
 
 %% S4: NOISE-CONDITIONAL SIMPLE EFFECTS AT EMPIRICAL DATASET CENTROIDS
 % Six contrasts repeated at the empirical noise centroids of all seven
@@ -439,14 +463,14 @@ results.pipelineCoding         = PIPE;
 results.empiricalCentroids     = CENTROIDS;
 
 timestamp = datestr(now, 'yyyymmdd_HHMMSS'); %#ok<DATST>
-outMat    = fullfile(srcDir, sprintf('simpleEffects_L%d_%s.mat', tractLvl, timestamp));
+outMat    = fullfile(srcDir, sprintf('simpleEffects_v004_L%d_%s.mat', tractLvl, timestamp));
 save(outMat, 'results', '-v7');
 fprintf('  Mat:  %s\n', outMat);
 
 % Plain-text summary
 resDir = fullfile(fileparts(srcDir), 'results');
 if ~exist(resDir, 'dir'), mkdir(resDir); end
-outTxt = fullfile(resDir, sprintf('simpleEffects_L%d_summary.txt', tractLvl));
+outTxt = fullfile(resDir, sprintf('simpleEffects_v004_L%d_summary.txt', tractLvl));
 writeSummary(outTxt, results);
 fprintf('  Text: %s\n', outTxt);
 

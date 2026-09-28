@@ -13,7 +13,7 @@ Two methods answer that question differently:
 - **Grid inversion** — the pre-registered design. Build one simulation grid spanning the full parameter space, then look up any recovered β against it directly. This assumes the β_gen → β_rec mapping is monotonic everywhere the grid covers.
 - **Pointwise inversion** — a correction, not a parallel design. Checking that assumption directly (a local-monotonicity gate applied per trial) shows it fails for most real data: across seven datasets and six protocols, only 4 of 42 dataset-protocol combinations pass cleanly, 6 are conditional, and 32 fail outright. Where grid inversion isn't safe, pointwise inversion instead checks, trial by trial, whether a local, noise-calibrated inversion is possible — and reports "not recoverable" rather than a false answer when it isn't.
 
-Grid inversion still produces the headline pooled estimate (β_gen* ≈ 0.30, k=3 core datasets). Pointwise inversion is what makes that number honest: it's the reason the paper reports invertibility status alongside any recovered value, rather than treating every β_rec as automatically meaningful.
+Grid inversion still produces a pooled point estimate (β_gen* ≈ 0.30, k=3 core datasets), reported as supporting context for the identifiability claim, not as this project's headline. Pointwise inversion is what makes that number honest: it's the reason the paper reports invertibility status alongside any recovered value, rather than treating every β_rec as automatically meaningful.
 
 ## What's in this release
 
@@ -53,7 +53,7 @@ Figures 1–3 (`plotBetaRecovery_v005.m`, `attractorLocation_v001.m`, `plotLMMCo
 
 ### 3. Grid inversion — apply the grid to real data
 
-The pre-registered method: for each real trial, look up its recovered β against the simulation grid built in step 1, to recover an estimate of the true generator. This is `runLoopClosureFftnoise_v007`/`_v008` (Fraser uses `_v008`, a newer runner version, not a different tier) — sort-and-`interp1` lookup, no monotonicity check. It produces the headline pooled β_gen* (≈0.30, k=3 core datasets: Fraser, Cook CTRL, Hickman PLAC).
+The pre-registered method: for each real trial, look up its recovered β against the simulation grid built in step 1, to recover an estimate of the true generator. This is `runLoopClosureFftnoise_v007`/`_v008` (Fraser uses `_v008`, a newer runner version, not a different tier) — sort-and-`interp1` lookup, no monotonicity check. It produces a pooled β_gen* estimate (≈0.30, k=3 core datasets: Fraser, Cook CTRL, Hickman PLAC), reported as supporting context, not the headline.
 
 **Status:** needs `powerlaw_debug_v058.db` (step 1) plus each dataset's own empirical noise characterisation (step 4 below) and raw per-trial recovered β values. Not regenerable from this repo alone.
 
@@ -82,7 +82,7 @@ Downstream of this (all regenerate cleanly from what's checked in):
 - Pattern preservation (`analyzePatternPreservation_v002.m`)
 - SEM agreement (`analyzeSEMAgreement_v002.m`)
 - Coverage probability / TDI (`analyzeTDICoverage_v001.m`)
-- Pooling (`loopClosureVarDecomp_v010.m`/`_v011.m`) — the headline β_gen* pool
+- Pooling (`loopClosureVarDecomp_v010.m`/`_v011.m`) — the supporting pooled β_gen* estimate (not the headline)
 - Structural (RSA/Mantel) validation (`buildConstellationRDM_v002.m`, `runConstellationRSA_HPC_v008.m`) — whether the *pattern* of pipeline behaviour across noise regimes matches between simulation and real data, not just individual values (pooled mantelR=+0.1938, n=3656, Pilot-excluded; Finding #179)
 
 ### Large files not yet in this repository
@@ -219,7 +219,7 @@ run('src/test_xiao_crossvalidate_v002.m')  % requires R on PATH
 │   ├── analyze{BlandAltman,PatternPreservation,SEMAgreement,TDICoverage}_*.m
 │   ├── buildConstellationRDM_v002.m           Pointwise: structural (RSA) validation
 │   ├── runConstellationRSA_HPC_v008.m
-│   ├── loopClosureVarDecomp_v0{10,11}.m       Pointwise: headline pooling
+│   ├── loopClosureVarDecomp_v0{10,11}.m       Pointwise: pooled β_gen* (supporting)
 │   ├── functions/
 │   │   ├── differentiateKinematicsEBR.m
 │   │   ├── regressDataEBR.m

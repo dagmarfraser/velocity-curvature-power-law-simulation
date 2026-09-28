@@ -1,14 +1,31 @@
-function plotPaperRoadmapSchematic_v001()
-% PLOTPAPERROADMAPSCHEMATIC_V001  Two-panel "Figure 0" for the paper skeleton.
+function plotPaperRoadmapSchematic_v002()
+% PLOTPAPERROADMAPSCHEMATIC_V002  Two-panel "Figure 0" for the paper skeleton.
+%
+% v002 (2026-09-19): LABEL-ONLY fork of v001 (Round 3 correctness pass,
+%   item 7). Two fixes, nothing else touched:
+%     1. Panel A's box read "loop closure:" -- the manuscript's own §0 now
+%        fixes "pointwise inversion" as the prose term throughout, keeping
+%        "loop closure" only as the name still used in supporting code.
+%        Box text changed to "pointwise inversion:" to match.
+%     2. Panel B's y-axis read "Global invertibility verdict (§4, Finding
+%        #160)", but the axis plots the 42-cell coverage classification
+%        (PASS/CONDITIONAL/FAIL banding of per-trial coverage), which the
+%        manuscript's Key terms box (§0) states explicitly is NOT the
+%        global forward-map screen (§4) -- that screen is "never
+%        satisfied" and has no PASS/CONDITIONAL/FAIL banding at all.
+%        Relabelled to name the coverage classification correctly.
+%   Data loading, the SEM lookup, the v012 loop-closure aggregation, the
+%   4/6/32 self-check, and every number the figure plots are byte-identical
+%   to v001 -- diff this file against v001 to confirm nothing else moved.
 %
 % Panel A: schematic flow of one trial through the paper's own logic (no
 %   data dependency) -- raw trajectory -> pipeline -> beta_obs, forking
 %   into the precision question (SEM, Sec 2.3) and the identifiability
 %   question (forward-map local invertibility, Sec 4/5), recombining into
-%   loop closure -> beta_gen*.
+%   pointwise inversion -> beta_gen*.
 % Panel B: the "central paradox" as a literal scatter, not a paragraph --
 %   all 42 empirical (dataset x pipeline) cells plotted by SEM adequacy
-%   (x-axis) against global forward-map invertibility verdict (y-axis).
+%   (x-axis) against the 42-cell coverage classification (y-axis).
 %   Sourced from real project outputs, not illustrative numbers:
 %     - Precision axis: perCoordinateSEM_v2_001.mat's own `sem` column,
 %       snapped to each dataset's own empirical (alpha,sigma,fs) centroid
@@ -189,7 +206,7 @@ function plotPaperRoadmapSchematic_v001()
             {'IDENTIFIABILITY','locally monotonic','here? (§4/§5)'}, ...
             {'report \beta_{obs}','+ SEM caveat, stop'}, ...
             {'FAIL LOUD:','no correction','possible'}, ...
-            {'loop closure:','shaped\_xu per-trial','inversion (§5)'}, ...
+            {'pointwise inversion:','shaped\_xu per-trial','inversion (§5)'}, ...
             {'\beta_{gen}^{*}, four uncertainty layers (§2.5)'} ...
         }, ...
         'col',   {grey, grey, grey, blue, green, red, red, green, green});
@@ -234,7 +251,7 @@ function plotPaperRoadmapSchematic_v001()
     xlim(axB, [-0.4 1.4]); ylim(axB, [0.5 3.5]);
     xticks(axB, [0 1]); xticklabels(axB, {'SEM inadequate','SEM adequate'});
     yticks(axB, [1 2 3]); yticklabels(axB, {'FAIL','CONDITIONAL','PASS'});
-    ylabel(axB, 'Global invertibility verdict (§4, Finding #160)');
+    ylabel(axB, '42-cell coverage classification (Part 1 Results (b))');
     grid(axB, 'on'); box(axB, 'on');
 
     nTopRight = sum(semAdequate(:) & vCode(:) == 3);
@@ -243,10 +260,10 @@ function plotPaperRoadmapSchematic_v001()
         'FontSize', 11);
 
     %% Save
-    outFile = fullfile('..', 'figures', 'paperRoadmap_v001.png');
+    outFile = fullfile('..', 'figures', 'paperRoadmap_v002.png');
     saveas(fig, outFile);
     fprintf('\nSaved: %s\n', outFile);
-    fprintf('Top-right (SEM adequate AND global PASS) cell count: %d / %d\n', ...
+    fprintf('Top-right (SEM adequate AND coverage-classification PASS) cell count: %d / %d\n', ...
         nTopRight, nDS*nPP);
 
 end
