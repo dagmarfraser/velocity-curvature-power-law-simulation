@@ -605,6 +605,12 @@ figures/*
 src/fourier/*.wav
 src/fourier/*.mp4
 
+# -- Zenodo deposit manifest, Session 127 (2026-09-29): MD5 builder for the 81-file
+# two-tier deposit (docs/eDataManifest_v004.md). Run from src/ on each host.
+# depositMD5_v002 (wildcard list, superseded) is not allowlisted.
+!src/depositMD5_v003.m
+!src/depositRDSAudit_v001.m
+
 # ============================================
 # Data outputs in src/ go to Zenodo, not git (Session 126, 2026-09-28)
 # ============================================
