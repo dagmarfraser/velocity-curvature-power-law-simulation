@@ -514,6 +514,11 @@ src/*
 !src/validateIrasaRecovery_v001.m
 !src/plotBetaGenStarAllDatasets_v003.m
 !src/plotBetaGenStarAllPipelines_v003.m
+# -- Session 129 (2026-09-29): scripts behind the v004 manuscript checks (registered noise
+# expectations, L9 interactions, Fraser 0.3292 provenance). Scanned: no keys/tokens, no /Users/ paths.
+!src/checkRegisteredNoiseExpectations_v001.m
+!src/checkL9TopInteractions_v001.m
+!src/checkFraserConstellationMedian_v001.m
 
 # ============================================
 # Python (if any helper scripts)
@@ -604,6 +609,36 @@ figures/*
 # ============================================
 src/fourier/*.wav
 src/fourier/*.mp4
+
+# -- The grid's tempo constant and the #242 domain re-runs, Session 129 (2026-09-29/30):
+# Findings #244-#247. Run from the project root (addpath src). gridKConv_v001 is the
+# single source for K(beta) = path integral of kappa^beta ds (it replaces the copied
+# K_conv = 175.2636, 5.28% low and blind to beta); every rebuild carries a V0 regression
+# anchor on the retired constant or domain. Outputs go to results/ (git-excluded).
+# Superseded the same session and not allowlisted: datasetOwnTempoExponent_v001,
+# checkVGFSEMCentroid_v004, datasetOperatingPointCoverage_v002,
+# queryMonotonicSlopeAtEmpirical_v004 (out-of-domain rule; v004's invRiseFrac artefact).
+# vgfMatchedSEMSensitivity_v001 (D17) stays above as a record; retired by #244/#228.
+# plotVGFRecovery_v003 needs powerlaw_debug_v058.db: run on the RDS host.
+!src/gridKConv_v001.m
+!src/testGridKConv_v001.m
+!src/checkGridTempoRange_v001.m
+!src/datasetOwnTempoExponent_v002.m
+!src/checkEmpiricalTempoVsGridVGF_v002.m
+!src/checkVGFSEMCentroid_v005.m
+!src/datasetOperatingPointCoverage_v003.m
+!src/queryMonotonicSlopeAtEmpirical_v005.m
+!src/investigateSEMPartBTrialLevel_v002.m
+!src/plotVGFRecovery_v003.m
+!src/analyseTrialTempoWindow_v002.m
+!src/checkTempoDecompositionDomain_v001.m
+!src/crossReferenceSimexMonotonicity_v002.m
+!src/checkPart2VerdictBasis_v001.m
+!src/checkAbstractBetaGenRange_v001.m
+!src/checkSEMBiasQuadrants_v001.m
+!src/checkCookTempoInteraction_v001.m
+!src/checkEllipseSizeVsGrid_v001.m
+!src/checkSEMLookupSizeMatched_v001.m
 
 # -- Zenodo deposit manifest, Session 127 (2026-09-29): MD5 builder for the 81-file
 # two-tier deposit (docs/eDataManifest_v004.md). Run from src/ on each host.
