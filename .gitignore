@@ -639,6 +639,12 @@ src/fourier/*.mp4
 !src/checkCookTempoInteraction_v001.m
 !src/checkEllipseSizeVsGrid_v001.m
 !src/checkSEMLookupSizeMatched_v001.m
+# Trials without a forward map (Finding #248, 2026-09-30): classification against the
+# runner's own flag, the mechanism (a verbatim, text-checked copy of the runner's
+# templateSubtract_local) and #239's peak-at-top share over trials with a map.
+!src/checkEmptyMaps_v001.m
+!src/checkEmptyMapMechanism_v001.m
+!src/checkPeakAtTopMapped_v001.m
 
 # -- Zenodo deposit manifest, Session 127 (2026-09-29): MD5 builder for the 81-file
 # two-tier deposit (docs/eDataManifest_v004.md). Run from src/ on each host.
