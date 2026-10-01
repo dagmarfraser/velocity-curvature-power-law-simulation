@@ -664,6 +664,7 @@ src/fourier/*.mp4
 # saved results) and the check that #249's IRLS onsets do not rest on the gaps.
 !src/checkBWFDHalfSampleNoise_v002.m
 !src/checkIRLSGap_v001.m
+!src/checkBetaObsMinusGenStar_v001.m
 
 # ============================================
 # Data outputs in src/ go to Zenodo, not git (Session 126, 2026-09-28)
