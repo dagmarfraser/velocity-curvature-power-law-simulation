@@ -652,6 +652,19 @@ src/fourier/*.mp4
 !src/depositMD5_v003.m
 !src/depositRDSAudit_v001.m
 
+# -- Session 130 (2026-10-01, lab PC): first-order harmonic theory of the pull to
+# one-third (#249) and BWFD's half-sample velocity/acceleration offset under noise
+# (#250). v003 and the noise sweep checkpoint their runs (results/, not tracked).
+!src/predictHarmonicGain_v001.m
+!src/predictHarmonicGain_v002.m
+!src/predictHarmonicGain_v003.m
+!src/checkBWFDHalfSampleNoise_v001.m
+
+# -- Session 131 (2026-10-01, iMac): #250's noise split and beta_gen-band table (reads v001's
+# saved results) and the check that #249's IRLS onsets do not rest on the gaps.
+!src/checkBWFDHalfSampleNoise_v002.m
+!src/checkIRLSGap_v001.m
+
 # ============================================
 # Data outputs in src/ go to Zenodo, not git (Session 126, 2026-09-28)
 # ============================================
