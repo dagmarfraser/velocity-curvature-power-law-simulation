@@ -670,6 +670,8 @@ src/fourier/*.mp4
 !src/checkSelectionDefect_v001.m
 !src/checkSelectionDefect_v002.m
 !src/checkDatasetMedianUncertainty_v001.m
+!src/checkManuscriptClaims_v001.m
+!src/checkPart2VerdictBasis_v002.m
 
 # ============================================
 # Data outputs in src/ go to Zenodo, not git (Session 126, 2026-09-28)
