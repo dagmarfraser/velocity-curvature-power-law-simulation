@@ -666,6 +666,11 @@ src/fourier/*.mp4
 !src/checkIRLSGap_v001.m
 !src/checkBetaObsMinusGenStar_v001.m
 
+# -- Session 135 (2026-10-11, iMac): Li/Meng sample-size and selection check (Finding #252).
+!src/checkSelectionDefect_v001.m
+!src/checkSelectionDefect_v002.m
+!src/checkDatasetMedianUncertainty_v001.m
+
 # ============================================
 # Data outputs in src/ go to Zenodo, not git (Session 126, 2026-09-28)
 # ============================================
