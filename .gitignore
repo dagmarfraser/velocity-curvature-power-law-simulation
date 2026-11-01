@@ -673,6 +673,110 @@ src/fourier/*.mp4
 !src/checkManuscriptClaims_v001.m
 !src/checkPart2VerdictBasis_v002.m
 
+# -- Sessions 145-146 (2026-10-23/24, iMac): scripts the v004 manuscript cites or
+# that back its Part A corrections: the edge-safe filter-cutoff collapse (Fig 1B-2) and
+# its zoom checks, Schaal & Sternad (2001) placed on the collapse, the Part 3 primary
+# metric (cccMed), the random-slope tempo refit, the required-products list and the
+# participant-overlap check. Outputs go to results/ and figures/ (results/ not tracked).
+!src/checkFilterCutoffCollapse_v002.m
+!src/checkFilterCutoffCollapse_v003.m
+!src/checkFilterCutoffCollapse_v004.m
+!src/plotFilterCutoffCollapseSchaal_v001.m
+!src/checkPart3PrimaryMetric_v001.m
+!src/fitTempoRandomSlope_v001.m
+!src/listRequiredProducts_v001.m
+!src/checkParticipantOverlap_v001.m
+# Also cited in v004 but caught by a broader ignore rule until now (claims ledger Part A, 2026-10-24):
+!src/analyseTempoSlopeRecovery_v001.m
+!src/bootstrapTempoReduction_v001.m
+!src/checkCookMatchBins_v001.m
+!src/runLoopClosureFftnoise_v015.m
+
+# -- Session 146 (2026-10-24, iMac): the tempo-slope simulations behind Part 4, the design
+# advice and Supplement B (which part of the noise produces the slope). Dagmar: "maximal
+# before knife - so it all goes in" (Z5), so the whole chain of docs/ADVICE_ExperimenterTempo_v001.md
+# section 4 is kept, mechanism scripts included. Not kept, as that note says: mkV003, mkV006,
+# phaseRandSurrogate_v001 (unused), runR30HPC_v001 (superseded). Run files stay out (eData).
+!src/simulateTempoCorpus_v002.m
+!src/simulateTempoCorpus_v003.m
+!src/simulateTempoCorpus_v004.m
+!src/simulateTempoCorpus_v005.m
+!src/simulateTempoCorpus_v006.m
+!src/shapedCommonSurrogate_v001.m
+!src/shapedXuCalibrated_v001.m
+!src/runTempoSimAll_v002.m
+!src/runTempoSimAll_v003.m
+!src/runTempoSimAll_v004.m
+!src/runTempoSimAll_v005.m
+!src/runOvernightHPC_v001.m
+!src/runR29HPC_v001.m
+!src/analyseTempoSlopeRecovery_v002.m
+!src/analyseTempoSlopeRecovery_v003.m
+!src/analyseR23_v001.m
+!src/analyseR29_v001.m
+!src/analyseR29PostHoc_v001.m
+!src/analyseR29Cropped_v001.m
+!src/analyseR29SeamFree_v001.m
+!src/analyseR30_v001.m
+!src/checkR29Arms_v001.m
+!src/checkR29SeamFree_v001.m
+!src/checkR30Arms_v001.m
+!src/checkR30AlphaVsOwn_v001.m
+!src/analyseR31b_v001.m
+!src/analyseR31c_v001.m
+
+# -- Session 146 (2026-10-24, iMac): the causal diagram (v004 §2.5a, Fig 2.5a; TODO Part C).
+# tempoDAG_v001 is the full 17-node graph (supplement); v002 the paper's two-reading figure.
+# dagAdjustmentSets_v002 fixes v001's one-candidate fault (v001 kept for the record).
+!src/tempoDAG_v001.m
+!src/tempoDAG_v002.m
+!src/dagDSeparated_v001.m
+!src/dagAdjustmentSets_v001.m
+!src/dagAdjustmentSets_v002.m
+# D-T7, sensitivity of the Cook null (v004 Part 4):
+!src/powerGroupContrast_v001.m
+# D-T6, inverse-probability weighting for the gate (v004 §2.5a, Part 4):
+!src/ipwGateTempoSlope_v001.m
+# D-D16, sampling rate and filter cutoff on the same Fraser trials (docs/SPEC_D16_SamplingRateCutoff_v001.md):
+# S1 local (v001 changed rate with decimate() and is superseded by v002's clean subsampling; kept for the record),
+# the SG curvature-residue check (Finding #259), and S2: the v016 generator, the runner it generates, the local
+# pre-HPC check and the HPC launcher.
+!src/obsBetaRateCutoff_v001.m
+!src/obsBetaRateCutoff_v002.m
+!src/checkSGCurvatureResidue_v001.m
+!src/makeRunLoopClosureV016_v001.m
+!src/runLoopClosureFftnoise_v016.m
+!src/checkV016Local_v001.m
+!src/runD16HPC_v001.m
+
+# Session 147 (2026-10-27): H1/D16 analysis scripts and the v006 claims ledger
+!src/analyseCrossAxisCoherence_v001.m
+!src/analyseCrossAxisCoherence_v002.m
+!src/analyseGeneratorFidelity_v001.m
+!src/analyseA60pSupport_v001.m
+!src/analyseA60pPattern_v001.m
+!src/analyseD16Checks_v001.m
+!src/templateTailStratify_v001.m
+!src/templateTailStratify_v002.m
+!src/checkClaimsV006_v001.m
+!src/checkSGResidueSensitivity_v001.m
+!src/checkSGResidueCCC_v001.m
+!src/checkTemplateTailOmission_v001.m
+!src/checkNoiseModelCCC_v001.m
+!src/checkCCCNullBaseline_v001.m
+!src/constellationMetrics_v005.m
+!src/runConstellationRSA_HPC_v009.m
+!src/analyzeSEMAgreement_v003.m
+!src/plotSecondaryMetricsV015_v001.m
+!src/buildTable6aV015_v001.m
+!src/buildTable6bV015_v001.m
+!src/checkPoolCCCHeterogeneity_v004.m
+!src/plotBetaGenStarAllDatasets_v004.m
+!src/plotBetaGenStarAllPipelines_v004.m
+!src/plotEmpiricalCoverageHeatmap_v002.m
+!src/templateEndAnchorTest_v001.m
+!src/runTemplateEndAnchorHPC_v001.m
+
 # ============================================
 # Data outputs in src/ go to Zenodo, not git (Session 126, 2026-09-28)
 # ============================================
@@ -682,3 +786,26 @@ src/fourier/*.mp4
 # this only keeps new ones out. src/functions/*.mat (e.g. baselineShp6_120Hz.mat,
 # needed to run the code) is one level down and unaffected.
 src/*.mat
+
+# End-anchored headline sensitivity (Sol, Addendum 70)
+!src/makeRunLoopClosureV019_v001.m
+!src/runLoopClosureFftnoise_v019.m
+!src/runEndAnchorHeadlineHPC_v001.m
+!src/analyseEndAnchorHeadline_v001.m
+!src/constellationMetrics_v006.m
+!src/bootstrapTempoReduction_v002.m
+
+# Sampling-rate reporting for manuscript section 2.3 (B1, Addendum 72)
+!src/reportSamplingRateEffects_v001.m
+!src/reportSyntheticAliasing_v001.m
+!src/reportSamplingRateLmm_v001.m
+!src/compareMatchedTrialsEndAnchor_v001.m
+!src/printDatasetNoiseMedians_v001.m
+!src/plotBetaGenStarAllDatasets_v005.m
+!src/compareMatchedTrialsEndAnchor_v001.m
+!src/checkAlphaIRAProvenance_v001.m
+!src/loopClosureSlopeMargin_v002.m
+
+# Session 149 Addendum 27 (2026-11-01): one-third coverage on both templates (Finding #270); edge-clip shares (Finding #188)
+!src/compareTable6bCoverage_v001.m
+!src/checkEdgeClipShare_v001.m
