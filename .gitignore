@@ -809,3 +809,13 @@ src/*.mat
 # Session 149 Addendum 27 (2026-11-01): one-third coverage on both templates (Finding #270); edge-clip shares (Finding #188)
 !src/compareTable6bCoverage_v001.m
 !src/checkEdgeClipShare_v001.m
+
+# Root clutter, never in git (Session 149, 2026-11-01; release prep Part I0)
+*.bak_*
+claude.md.bak*
+.gitignore.bak*
+Claude outputs/
+logs/
+backups_s135/
+data/phan/
+claude-legacy-project-memory-*.md
