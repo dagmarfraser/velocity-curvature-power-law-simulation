@@ -986,3 +986,10 @@ claude-legacy-project-memory-*.md
 !src/harmonicOrderSelect_v001.m
 !src/harmonicContentRule_v001.m
 !src/harmonicOrderSelect_v002.m
+
+# 2026-11-18 v033 (nH0: zero harmonics) runner, launcher, generator, equivalence check
+!src/runLoopClosureFftnoise_v033.m
+!src/makeRunLoopClosureV033_v001.m
+!src/checkV033EqualsV028_v001.m
+!src/runV033HPC_v001.m
+!src/runV033HPC_v001.sh
