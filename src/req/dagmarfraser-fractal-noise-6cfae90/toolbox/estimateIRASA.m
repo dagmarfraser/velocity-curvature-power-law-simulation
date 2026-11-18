@@ -3,9 +3,15 @@ function [alphaEst, sigmaEst, pFractal, fVec, ftInfo, pmInfo] = estimateIRASA(x,
 %
 % Toolbox wrap of PowerLawSimulationPreReg's iraAlphaSigma_v003.m (not
 % v001 -- v003 adds the pFractal/fVec outputs needed for Lorentzian-knee
-% work at no downside; same core estimator otherwise). Core algorithm
-% (resampling-median IRASA on pmtm PSDs, Wen & Liu 2016 mechanism) is
-% unchanged from source.
+% work at no downside; same core estimator otherwise).
+%
+% CHANGED IN v2.0.0 (bug fix): up to v1.2.0 this function, like its
+% source, did NOT remove oscillatory peaks. It took the PSD of each
+% resampled copy at its true rate (fs*h, fs/h) and interpolated back to
+% the same Hz axis, so peaks never moved and the median over Hset had
+% nothing to reject; the result was a PSD slope fit. The default is now
+% the Wen & Liu (2016) method. The old behaviour is kept only as
+% Resampling="legacy", for reproducing earlier results, and warns.
 %
 % SYNTAX:
 %   [alphaEst, sigmaEst] = estimateIRASA(x, fs, fLow, fHigh)
@@ -13,6 +19,9 @@ function [alphaEst, sigmaEst, pFractal, fVec, ftInfo, pmInfo] = estimateIRASA(x,
 %   [___] = estimateIRASA(___, Hset=customHset)
 %   [___, ftInfo] = estimateIRASA(___, CompareFieldTrip=true)
 %   [___, ftInfo, pmInfo] = estimateIRASA(___, ComparePMTM=true)
+%   [___] = estimateIRASA(___, Prewhiten=k)          % recommended for steep spectra
+%   [___] = estimateIRASA(___, PSD="welch")
+%   [___] = estimateIRASA(___, Resampling="legacy")  % pre-2.0 behaviour; warns
 %
 % INPUTS:
 %   x     - Time series, real column vector
@@ -25,7 +34,8 @@ function [alphaEst, sigmaEst, pFractal, fVec, ftInfo, pmInfo] = estimateIRASA(x,
 %           runs FieldTrip's ft_freqanalysis(method='irasa') on the same
 %           signal and band for comparison, returned in ftInfo.
 %   ComparePMTM - Name-value logical, default false. If true, also fits
-%           a direct log-log slope to the un-resampled pmtm PSD (no
+%           a direct log-log slope to the un-resampled PSD (pmtm, or
+%           Welch with PSD="welch"; recoloured if Prewhiten > 0) (no
 %           IRASA resampling-median step at all) over the same [fLow,
 %           fHigh] band, returned in pmInfo. This is the comparison that
 %           actually tests the resampling-median step in isolation:
@@ -36,6 +46,35 @@ function [alphaEst, sigmaEst, pFractal, fVec, ftInfo, pmInfo] = estimateIRASA(x,
 %           (pmtm, same as HB) and removes resampling-median entirely,
 %           isolating that step as the variable under test -- see
 %           README_IRASAThreeWayAgreement_v001.md Section 2.
+%   PSD   - Name-value, "pmtm" (default, unchanged from source) or
+%           "welch" (Hann, 50% overlap, segment min(1024, floor(N/2))
+%           samples at fs; resampled copies keep the same segment
+%           duration). Applies to every PSD inside IRASA and to pRaw.
+%   Prewhiten - Name-value, integer k in 0..3, default 0. Differences x
+%           k times before IRASA, then recolours pFractal and pRaw by
+%           1/(2 - 2cos(2*pi*f/fs))^k, so alphaEst is still the exponent
+%           of x. Removes the leakage that biases IRASA on steep,
+%           break-free spectra (see RANGE). Pick k = floor((alpha + 1)/2)
+%           from a rough alpha, or take the kUsed output of
+%           estimateWhittleAlpha. Errors if combined with CompareFieldTrip.
+%   Resampling - Name-value, "irasa" (default) or "legacy".
+%           "irasa" is the Wen & Liu (2016) method: each resampled copy
+%           is analysed as if still sampled at fs, so an oscillatory peak
+%           at f0 moves to f0*h and f0/h while a scale-free component
+%           keeps its shape, and the median over Hset rejects the peak.
+%           Requires fHigh*max(Hset) < fs/2 (errors if not); pFractal is
+%           NaN from fs/(2*max(Hset)) upward, where the up-sampled copies
+%           hold no signal, so sigmaEst covers only the range below it.
+%           "legacy" is the behaviour of v1.2.0 and earlier, and of the
+%           source iraAlphaSigma_v001 to v003, bit for bit (with PSD and
+%           Prewhiten at their defaults). It is NOT IRASA: each resampled
+%           copy is labelled with its true rate (fs*h, fs/h), so every
+%           copy estimates the same spectrum at the same frequencies,
+%           peaks do not move and are not removed, and alphaEst is in
+%           effect a PSD slope fit (a 10 Hz sine 14.9 dB above the raw
+%           spectrum stays 14.7 dB above pFractal). Use it only to
+%           reproduce earlier results. It raises the warning
+%           estimateIRASA:legacyResampling on every call.
 %
 % OUTPUTS:
 %   alphaEst - Spectral exponent (homebrew IRASA estimate)
@@ -46,6 +85,9 @@ function [alphaEst, sigmaEst, pFractal, fVec, ftInfo, pmInfo] = estimateIRASA(x,
 %              the alpha log-log fit. Do not expect sigmaEst to equal
 %              std(x); it is a spectral-magnitude estimate, not a
 %              reconstruction of the time-domain standard deviation.
+%              With the default Resampling="irasa" the valid bins stop
+%              below fs/(2*max(Hset)), so sigmaEst is smaller than under
+%              "legacy", which integrated up to fs/2.
 %   pFractal - Aperiodic PSD, linear units, geometric median across
 %              h-pairs (same length as fVec)
 %   fVec     - Frequency axis, Hz
@@ -70,22 +112,30 @@ function [alphaEst, sigmaEst, pFractal, fVec, ftInfo, pmInfo] = estimateIRASA(x,
 %       When ComparePMTM=false (default), pmInfo is returned as a
 %       struct with available=false and message="ComparePMTM not requested".
 %
-% VERIFIED RANGE (Finding #100, PowerLawSimulationPreReg):
-%   Independent estimator recoverability -- i.e. this function's alpha
-%   estimate agreeing with a known ground truth -- is verified for
-%   alpha in [-2, 6]. This is a NARROWER claim than the generator's
-%   numerical stability range (alpha in [-2, 7], see noiseXu); at
-%   alpha=7 three independent estimators (this homebrew IRASA, FieldTrip
-%   IRASA, and a resampling-free direct pmtm slope fit) diverge from one
-%   another, consistent with an information limit at typical trial
-%   lengths rather than a specific defect in any one estimator. Do not
-%   treat this function's output as independently verified ground truth
-%   outside alpha in [-2, 6]. ComparePMTM is the estimator most directly
-%   responsible for establishing this range in the original finding --
-%   prefer enabling it over CompareFieldTrip alone when checking whether
-%   a given alphaEst is trustworthy, since HB-vs-FT agreement alone
-%   cannot rule out a shared resampling-median artefact.
-%
+% RANGE (validation/irasaOptions/checkIRASAOptions_v001, N 3000, band
+% 1-20 Hz, fs 100 and 240, alpha 1.5-5.5, 10 series per cell):
+%   The default (pmtm, no prewhitening) depends on the noise, not just
+%   on alpha. On noise with a low-frequency break (noiseXu default Phi)
+%   it is within +/-0.1 to alpha 5.5. On break-free noise (exact
+%   integrated fGn, or noiseXu Phi = 1) it overshoots from alpha 3.5 at
+%   fs 240 (+0.5 at 3.5, +1.7 to +2.1 at 4.5) and collapses at alpha 5.5,
+%   fs 100 (-2.1). PSD="welch" alone halves but does not remove this
+%   (+0.4 to +0.6 at alpha >= 4.5). Prewhiten=k, with either PSD, keeps
+%   the bias within +/-0.23 on all three generators, the same as
+%   estimateWhittleAlpha. For real data, where you do not know whether
+%   there is a break, use Prewhiten for alpha above about 3, or use
+%   estimateWhittleAlpha.
+%   ComparePMTM is NOT an independent check of the default: it fits the
+%   same un-resampled pmtm PSD, so it shares the leakage, and agreement
+%   with alphaEst does not validate it on steep spectra. CompareFieldTrip
+%   changes only the taper (one whole-record Hann) and keeps IRASA.
+%   The figures above were measured before v2.0.0, that is with
+%   Resampling="legacy", on peak-free noise. They have NOT yet been
+%   re-measured under the default "irasa"; on peak-free noise at alpha 2
+%   the two agree (tests), and steep break-free noise still needs
+%   Prewhiten under either. FieldTrip implements "irasa", so
+%   CompareFieldTrip now compares like with like.
+
 % FIELDTRIP DEPENDENCY POLICY:
 %   CompareFieldTrip defaults to false, so estimateIRASA has no hard
 %   FieldTrip dependency for its core (homebrew) estimate. Requesting
@@ -101,7 +151,7 @@ function [alphaEst, sigmaEst, pFractal, fVec, ftInfo, pmInfo] = estimateIRASA(x,
 %   added them to the path. Checking for ft_defaults itself is the
 %   correct availability test.
 %
-% See also: noiseXu, checkSpectralKnee
+% See also: noiseXu, checkSpectralKnee, estimateWhittleAlpha
 %
 % Toolbox: fractalnoise
 % Extracted from: src/functions/iraAlphaSigma_v003.m (algorithm inlined
@@ -121,9 +171,33 @@ arguments
     options.Hset (1, :) double = 1.1:0.05:1.9
     options.CompareFieldTrip (1, 1) logical = false
     options.ComparePMTM (1, 1) logical = false
+    options.PSD (1, 1) string {mustBeMember(options.PSD, ["pmtm", "welch"])} = "pmtm"
+    options.Prewhiten (1, 1) double {mustBeInteger, mustBeNonnegative, mustBeLessThanOrEqual(options.Prewhiten, 3)} = 0
+    options.Resampling (1, 1) string {mustBeMember(options.Resampling, ["irasa", "legacy"])} = "irasa"
 end
 
-[alphaEst, sigmaEst, pFractal, fVec, pRaw] = estimateIRASACore(x, fs, fLow, fHigh, options.Hset);
+if options.Resampling == "legacy"
+    warning("estimateIRASA:legacyResampling", "%s", ...
+        "Resampling=""legacy"" is the pre-2.0.0 behaviour and is not IRASA: it does not remove oscillatory " + ...
+        "peaks (alphaEst is a PSD slope fit). Use it only to reproduce earlier results.");
+end
+
+if options.Resampling == "irasa" && fHigh * max(options.Hset) >= fs / 2
+    error("estimateIRASA:irasaBand", ...
+        "Resampling=""irasa"" needs fHigh*max(Hset) < fs/2 (got %g*%g = %g Hz, fs/2 = %g Hz). Lower fHigh or max(Hset).", ...
+        fHigh, max(options.Hset), fHigh * max(options.Hset), fs / 2);
+end
+
+if options.CompareFieldTrip && options.Prewhiten > 0
+    error("estimateIRASA:prewhitenFieldTrip", "%s", ...
+        "CompareFieldTrip runs FieldTrip on the raw series, so it cannot be " + ...
+        "compared with a prewhitened estimate. Use Prewhiten=0 with CompareFieldTrip.");
+end
+if numel(x) - options.Prewhiten < 8
+    error("estimateIRASA:short", "Series too short (N = %d) for Prewhiten = %d.", numel(x), options.Prewhiten);
+end
+
+[alphaEst, sigmaEst, pFractal, fVec, pRaw] = estimateIRASACore(x, fs, fLow, fHigh, options.Hset, options.PSD, options.Prewhiten, options.Resampling);
 
 if options.CompareFieldTrip
     ftInfo = estimateIRASAFieldTripCompare(x, fs, fLow, fHigh, options.Hset, alphaEst);
@@ -244,39 +318,83 @@ ftInfo = struct("available", true, "alphaFT", alphaFT, "gapHBFT", gapHBFT, ...
 
 end
 
-function [alphaEst, sigmaEst, pFractal, fVec, pRaw] = estimateIRASACore(x, fs, fLow, fHigh, hset)
+function [alphaEst, sigmaEst, pFractal, fVec, pRaw] = estimateIRASACore(x, fs, fLow, fHigh, hset, psdMethod, k, resampling)
 %ESTIMATEIRASACORE Inlined copy of iraAlphaSigma_v003's IRASA algorithm.
 %   Bundled here, not called externally, so the toolbox has no dependency
 %   on PowerLawSimulationPreReg's src/functions/ directory existing on
-%   the path. Algorithm unchanged from source: resampling-median IRASA
-%   on pmtm PSDs (Wen & Liu 2016 mechanism).
+%   the path. With resampling="legacy", psdMethod="pmtm" and k=0 the
+%   algorithm is unchanged from source and the output is bit-identical
+%   to it; that source labels the resampled copies with their true rates
+%   and so does not remove peaks (see the main help).
 %
-%   pRaw (fifth output) is the un-resampled h=1 pmtm PSD, computed here
-%   regardless (needed for fVec) but previously discarded. Kept and
-%   returned so ComparePMTM can reuse it without a second pmtm call --
-%   this is exactly the "PM" estimator from
-%   README_IRASAThreeWayAgreement_v001.md: same PSD estimator as HB,
-%   no resampling-median step.
+%   psdMethod="welch": every PSD (original, up- and down-sampled) is a
+%   Hann-window Welch estimate with 50% overlap and the same segment
+%   DURATION, so all three share one frequency resolution. Segment length
+%   at fs is min(1024, floor(N/2)) samples (the stage-1 validation grid).
+%
+%   k > 0: x is differenced k times before IRASA, and pFractal and pRaw
+%   are recoloured by 1/(2 - 2cos(2*pi*f/fs))^k before the fit, so
+%   alphaEst is the exponent of x itself. The DC bin is set to NaN
+%   (division by zero there), so sigmaEst excludes it.
+%
+%   resampling="irasa": the resampled copies are analysed at the NOMINAL
+%   rate fs (Wen & Liu 2016), so peaks move by h and 1/h and the median
+%   rejects them. The up-sampled copy then shows the true spectrum at
+%   f*h and the down-sampled copy at f/h. With k > 0 the differencing
+%   gain is not scale-free, so each h column is recoloured by its own
+%   sqrt(gain(f/h)*gain(f*h)) BEFORE the median (exact), not by gain(f)
+%   after it. Bins at or above fs/(2*max(hset)) are set to NaN.
+%
+%   pRaw (fifth output) is the un-resampled h=1 PSD, computed here
+%   regardless (needed for fVec). Kept and returned so ComparePMTM can
+%   reuse it without a second PSD call.
 
-[pRaw, fVec] = pmtm(x, 4, [], fs);
+for j = 1:k
+    x = diff(x);
+end
+
+[pRaw, fVec] = psdLocal(x, fs, psdMethod, numel(x));
 nF = numel(fVec);
 geoMeans = nan(nF, numel(hset));
+isIrasa = resampling == "irasa";
+gainAt = @(f) (2 - 2 * cos(2 * pi * f / fs)) .^ k;
 
 for hi = 1:numel(hset)
     h = hset(hi);
 
     xUp = resample(x, round(h * 1000), 1000);
-    [pU, fU] = pmtm(xUp(:), 4, [], fs * h);
-    pUI = interp1(fU, pU, fVec, 'linear', NaN);
-
     xDn = resample(x, 1000, round(h * 1000));
-    [pD, fD] = pmtm(xDn(:), 4, [], fs / h);
+    if isIrasa
+        [pU, fU] = psdNominalLocal(xUp(:), fs, psdMethod, numel(x));
+        [pD, fD] = psdNominalLocal(xDn(:), fs, psdMethod, numel(x));
+    else
+        [pU, fU] = psdLocal(xUp(:), fs * h, psdMethod, numel(x));
+        [pD, fD] = psdLocal(xDn(:), fs / h, psdMethod, numel(x));
+    end
+    pUI = interp1(fU, pU, fVec, 'linear', NaN);
     pDI = interp1(fD, pD, fVec, 'linear', NaN);
 
     geoMeans(:, hi) = sqrt(pUI .* pDI);
+    if isIrasa && k > 0
+        gainH = sqrt(gainAt(fVec / h) .* gainAt(fVec * h));
+        gainH(gainH == 0) = NaN;
+        geoMeans(:, hi) = geoMeans(:, hi) ./ gainH;
+    end
 end
 
 pFractal = median(geoMeans, 2, 'omitnan');
+if isIrasa
+    pFractal(fVec * max(hset) >= fs / 2) = NaN;
+end
+
+if k > 0
+    gain = gainAt(fVec);
+    gain(gain == 0) = NaN;
+    if ~isIrasa
+        pFractal = pFractal ./ gain;
+    end
+    pRaw = pRaw ./ gain;
+end
 
 fitMask = fVec >= fLow & fVec <= fHigh & ~isnan(pFractal) & pFractal > 0;
 if sum(fitMask) < 3
@@ -291,4 +409,28 @@ validMask = ~isnan(pFractal) & pFractal > 0;
 noiseVar = trapz(fVec(validMask), pFractal(validMask)) * 2;
 sigmaEst = sqrt(max(noiseVar, 0));
 
+end
+
+function [p, f] = psdLocal(x, fsLocal, psdMethod, nOrig)
+%PSDLOCAL PSD of one (possibly resampled) series. pmtm path is the source call.
+if psdMethod == "pmtm"
+    [p, f] = pmtm(x, 4, [], fsLocal);
+else
+    % Segment length at the original fs is min(1024, floor(nOrig/2)) samples;
+    % resampled series scale it by their length ratio, keeping the same
+    % segment DURATION and hence the same frequency resolution.
+    L = min(numel(x), round(min(1024, floor(nOrig / 2)) * numel(x) / nOrig));
+    [p, f] = pwelch(x, hann(L, 'periodic'), floor(L / 2), max(256, 2 ^ nextpow2(L)), fsLocal);
+end
+end
+
+function [p, f] = psdNominalLocal(x, fs, psdMethod, nOrig)
+%PSDNOMINALLOCAL PSD of a resampled series at the NOMINAL rate fs (Resampling="irasa").
+%   Welch keeps the same segment LENGTH in samples as the un-resampled PSD, so every copy shares its frequency grid.
+if psdMethod == "pmtm"
+    [p, f] = pmtm(x, 4, [], fs);
+else
+    L = min(numel(x), min(1024, floor(nOrig / 2)));
+    [p, f] = pwelch(x, hann(L, 'periodic'), floor(L / 2), max(256, 2 ^ nextpow2(L)), fs);
+end
 end
