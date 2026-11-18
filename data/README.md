@@ -1,6 +1,6 @@
 # Data
 
-This project analyses fourteen movement datasets. **No raw data is redistributed through this repository** — every subfolder below has its own `README.md` with the citation, DOI, and how to obtain the dataset yourself. Raw data files, extracted archives, and internal working notes are excluded from version control (see `.gitignore`); only the citation READMEs are tracked.
+This project analyses fifteen movement datasets. **No raw data is redistributed through this repository** — every subfolder below has its own `README.md` with the citation, DOI, and how to obtain the dataset yourself. Raw data files, extracted archives, and internal working notes are excluded from version control (see `.gitignore`); only the citation READMEs are tracked.
 
 ## Core empirical validation datasets (Stage 5 of the pre-registration)
 
@@ -39,6 +39,12 @@ This project analyses fourteen movement datasets. **No raw data is redistributed
 | Fritschi et al. (2021) | `fritschi/` | Assessed and rejected as unsuitable |
 
 These three are kept for now but contribute nothing to any current result — a decision on whether to remove them entirely is open (see `docs/TODO_GitHubReleasePrep_v002.md`).
+
+## Candidate, parked (CoherenceGap)
+
+| Dataset | Folder | Status |
+|---|---|---|
+| Phan et al. (2026), IMoveLab raw data | `phan/` | Candidate for the CoherenceGap sub-project; not adopted, nothing analysed. Open checks and decisions: `docs/TODO_PhanCoherenceGapDesiderata_v001.md` |
 
 ## Contact
 

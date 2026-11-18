@@ -278,7 +278,7 @@ switch DATASET
         importFn = @() importDB_dhieb_v001(Verbose=false);
     case 'Fraser'
         matFile  = fullfile(srcDir, 'noiseCharacterisation_fraser.mat');
-        sigToMM  = 1 / 10.41793;
+        sigToMM  = 1 / 5.208965;
         FS_DS    = 240;
         importFn = @() importDB_fraser_v001(Verbose=false);
     case 'FraserN48'   % v020
